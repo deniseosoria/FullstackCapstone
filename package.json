@@ -1,0 +1,33 @@
+{
+  "name": "fullstackcapstone",
+  "version": "1.0.0",
+  "description": "Fullstack Capstone Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server",
+    "start:dev": "nodemon server"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deniseosoria/FullstackCapstone.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deniseosoria/FullstackCapstone/issues"
+  },
+  "homepage": "https://github.com/deniseosoria/FullstackCapstone#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.3",
+    "uuid": "^11.1.0"
+  }
+}
