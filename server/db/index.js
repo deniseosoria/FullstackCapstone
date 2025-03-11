@@ -1,4 +1,7 @@
 const { Client } = require("pg"); // imports the pg module
+const bcrypt = require("bcrypt");
+const SALT_ROUNDS = 10;
+
 require("dotenv").config({ path: "./.env" });
 
 const client = new Client({
@@ -18,45 +21,84 @@ const client = new Client({
  */
 
 // Create a new user
-const createUser = async (name, email, password, location, phone, picture) => {
-  const result = await client.query(
-    "INSERT INTO users (name, email, password, location, phone, picture) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-    [name, email, password, location, phone, picture]
-  );
-  return result.rows[0];
-};
+async function createUser({ name, username, password, location, picture }) {
+    try {
+      console.log("🔹 Inside createUser - received:", { name, username, password, location, picture });
+  
+      if (!password) {
+        throw new Error("Password is missing in createUser");
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+      console.log("Hashed password:", hashedPassword);
+  
+      const { rows: [user] } = await client.query(
+        `INSERT INTO users (name, username, password, location, picture)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *;`,
+        [name, username, hashedPassword, location, picture]
+      );
+  
+      console.log("User created:", user);
+      return user;
+    } catch (error) {
+      console.error("Error in createUser:", error);
+      throw error;
+    }
+  }
 
 async function updateUser(id, fields = {}) {
-    // build the set string
-    const setString = Object.keys(fields).map(
-      (key, index) => `"${ key }"=$${ index + 1 }`
-    ).join(', ');
-  
-    // return early if this is called without fields
-    if (setString.length === 0) {
-      return;
-    }
-  
+  // build the set string
+  const setString = Object.keys(fields)
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
+
+  // return early if this is called without fields
+  if (setString.length === 0) {
+    return;
+  }
+
+  try {
+    const {
+      rows: [user],
+    } = await client.query(
+      `UPDATE users SET ${setString} WHERE id=$${
+        Object.keys(fields).length + 1
+      } RETURNING *;`,
+      [...Object.values(fields), id]
+    );
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getAllUsers() {
     try {
-      const { rows: [ user ] } = await client.query(`
-        UPDATE users
-        SET ${ setString }
-        WHERE id=${ id }
-        RETURNING *;
-      `, Object.values(fields));
-  
-      return user;
+      const { rows } = await client.query(`
+        SELECT id, name, username, location 
+        FROM users;
+      `);
+    
+      return rows;
     } catch (error) {
       throw error;
     }
   }
 
-// Get user by email (for login)
-const getUserByEmail = async (email) => {
-  const result = await client.query("SELECT * FROM users WHERE email = $1", [
-    email,
-  ]);
-  return result.rows[0];
+// Get user by username (for login)
+const getUserByUsername = async (username) => {
+  try {
+    const result = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error fetching user by username:", error);
+    throw new Error("Database error");
+  }
 };
 
 // Get user by ID
@@ -70,43 +112,70 @@ const getUserById = async (id) => {
  */
 
 // Create a new event
-const createEvent = async (
-  userId,
-  event_name,
-  description,
-  event_type,
-  address,
-  price,
-  capacity,
-  date,
-  startTime,
-  endTime,
-  picture
-) => {
-  const result = await client.query(
-    "INSERT INTO events (user_id, event_name, description, event_type, address, price, capacity, date, start_time, end_time, picture) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
-    [
-      userId,
-      event_name,
-      description,
-      event_type,
-      address,
-      price,
-      capacity,
-      date,
-      startTime,
-      endTime,
-      picture,
-    ]
-  );
-  return result.rows[0];
-};
+async function createEvent({
+    user_id,
+    event_name,
+    description,
+    event_type,
+    address,
+    price,
+    capacity,
+    date,
+    start_time,
+    end_time,
+    picture
+  }) {
+    try {
+      const { rows: [event] } = await client.query(
+        `
+        INSERT INTO events (user_id, event_name, description, event_type, address, price, capacity, date, start_time, end_time, picture)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING *;
+        `,
+        [user_id, event_name, description, event_type, address, price, capacity, date, start_time, end_time, picture]
+      );
+  
+      return event;
+    } catch (error) {
+      console.error("Error in createEvent:", error);
+      throw error;
+    }
+  }
+  
+
+async function updateEvent(event_id, fields = {}) {
+  // build the set string
+  const setString = Object.keys(fields)
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
+
+  try {
+    // update any fields that need to be updated
+    if (setString.length > 0) {
+      await client.query(
+        `
+          UPDATE events
+          SET ${setString}
+          WHERE id=$${Object.keys(fields).length + 1} RETURNING *;`,
+        [...Object.values(fields), event_id]
+      );
+    }
+
+    return await getEventById(event_id);
+  } catch (error) {
+    throw error;
+  }
+}
 
 // Get all events
-const getAllEvents = async () => {
-  const result = await client.query("SELECT * FROM events ORDER BY date ASC");
-  return result.rows;
-};
+const getAllEvents = async (limit = 10, offset = 0) => {
+    const result = await client.query(
+      "SELECT * FROM events ORDER BY date ASC LIMIT $1 OFFSET $2",
+      [limit, offset]
+    );
+    return result.rows;
+  };
+  
 
 // Get event by ID
 const getEventById = async (id) => {
@@ -159,31 +228,49 @@ const cancelBooking = async (userId, eventId) => {
  */
 
 // Add a review
-const addReview = async (userId, eventId, rating, textReview) => {
+const addReview = async (userId, event_id, rating, text_review) => {
   const result = await client.query(
     "INSERT INTO reviews (user_id, event_id, rating, text_review) VALUES ($1, $2, $3, $4) RETURNING *",
-    [userId, eventId, rating, textReview]
+    [userId, event_id, rating, text_review]
   );
   return result.rows[0];
 };
 
 // Get reviews for an event
-const getEventReviews = async (eventId) => {
+const getEventReviews = async (event_id) => {
   const result = await client.query(
     "SELECT * FROM reviews WHERE event_id = $1",
-    [eventId]
+    [event_id]
   );
   return result.rows;
 };
 
 // Edit a review
-const editReview = async (reviewId, userId, rating, textReview) => {
-  const result = await client.query(
-    "UPDATE reviews SET rating = $1, text_review = $2 WHERE id = $3 AND user_id = $4 RETURNING *",
-    [rating, textReview, reviewId, userId]
-  );
-  return result.rows[0];
-};
+const editReview = async (userId, event_id, fields = {}) => {
+    // Build the set string
+    const setString = Object.keys(fields)
+      .map((key, index) => `"${key}"=$${index + 1}`)
+      .join(", ");
+  
+    try {
+      // Update fields only if there are fields to update
+      if (setString.length > 0) {
+        await client.query(
+          `
+          UPDATE reviews
+          SET ${setString}
+          WHERE user_id=$${Object.keys(fields).length + 1} AND event_id=$${Object.keys(fields).length + 2}
+          RETURNING *;
+        `,
+          [...Object.values(fields), userId, event_id]
+        );
+      }
+      return await getEventReviews(event_id);
+    } catch (error) {
+      throw error;
+    }
+  };
+  
 
 // Delete a review
 const deleteReview = async (reviewId, userId) => {
@@ -229,9 +316,11 @@ module.exports = {
   client,
   createUser,
   updateUser,
-  getUserByEmail,
+  getAllUsers,
+  getUserByUsername,
   getUserById,
   createEvent,
+  updateEvent,
   getAllEvents,
   getEventById,
   deleteEvent,
