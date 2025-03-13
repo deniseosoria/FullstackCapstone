@@ -10,6 +10,14 @@ require('dotenv').config({ path: "./.env" });
 // Use JWT_SECRET from environment variables, defaulting to "shhh" if not provided
 const JWT_SECRET = process.env.JWT_SECRET || "shhh";
 
+const app = express();
+app.use(express.json());
+
+//for deployment only
+const path = require('path');
+app.get('/', (req, res)=> res.sendFile(path.join(__dirname, '../client/dist/index.html')));
+app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets'))); 
+
 
 // ================================
 // Middleware: Authenticate User

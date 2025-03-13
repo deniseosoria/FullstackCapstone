@@ -287,11 +287,20 @@ const deleteReview = async (reviewId, userId) => {
 
 // Add an event to favorites
 const addFavorite = async (userId, eventId) => {
-  const result = await client.query(
-    "INSERT INTO favorites (user_id, event_id) VALUES ($1, $2) RETURNING *",
-    [userId, eventId]
-  );
-  return result.rows[0];
+  try {
+    const result = await client.query(
+      "INSERT INTO favorites (user_id, event_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
+      [userId, eventId]
+    );
+    if (result.rows.length === 0) {
+      console.log(`⚠️ User ${userId} already favorited Event ${eventId}`);
+      return null;
+    }
+    return result.rows[0];
+  } catch (error) {
+    console.error("❌ Error adding favorite:", error.message);
+    throw error;
+  }
 };
 
 // Get user's favorite events

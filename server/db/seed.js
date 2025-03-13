@@ -15,6 +15,7 @@ const {
   getEventReviews,
   addReview,
   editReview,
+  addFavorite,
   getUserFavorites,
 } = require("./index");
 
@@ -58,15 +59,16 @@ async function createTables() {
         event_name VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         event_type VARCHAR(50),
-        address TEXT NOT NULL,
+        address VARCHAR(255) NOT NULL, -- Changed from TEXT for potential indexing
         price DECIMAL(10,2) DEFAULT 0.00,
-        capacity INT NOT NULL,
+        capacity INT NOT NULL CHECK (capacity > 0), -- Added a constraint for capacity
         date DATE NOT NULL,
         start_time TIME NOT NULL,
-        end_time TIME NOT NULL,
+        end_time TIME NOT NULL CHECK (end_time > start_time), -- Ensures valid time range
         picture TEXT, 
         created_at TIMESTAMP DEFAULT NOW()
         );
+
 
 
         CREATE TABLE bookings (
@@ -121,14 +123,14 @@ async function createInitialUsers() {
       },
       {
         name: "jeffrey",
-        username: "Jeffrey Dahmer",
+        username: "Jeffrey Thomson",
         password: "jeff2000",
         location: "New York City, New York",
       },
     ];
 
     for (const user of users) {
-      console.log("Creating user:", user); // Debugging: Ensure password exists
+      console.log("Creating user:", user); // Ensure password exists
       await createUser(user);
     }
 
@@ -209,15 +211,6 @@ async function rebuildDB() {
 }
 
 async function testDB() {
-  // getUserById,
-  // updateEvent,
-  // getAllEvents,
-  // getEventById,
-  // getUserBookings,
-  // getEventReviews,
-  // editReview,
-  // getUserFavorites
-
   try {
     console.log("Starting to test database...");
 
@@ -324,16 +317,47 @@ async function testDB() {
 
     // 🔹 Test getEventReviews
     if (allEvents.length > 0) {
-        console.log("\n➡️ Calling getEventReviews for the first event...");
-        const reviews = await getEventReviews(allEvents[0].id);
-        console.log("Result:", reviews);
+      console.log("\n➡️ Calling getEventReviews for the first event...");
+      const reviews = await getEventReviews(allEvents[0].id);
+      console.log("Result:", reviews);
+    } else {
+      console.log("❌ No events available to fetch reviews.");
+    }
+
+    console.log("Users:", users);
+    console.log("Events:", events);
+
+    // 🔹 Test addFavorite
+    if (users.length > 1 && events.length > 2) {
+      // Change condition to >2 (since index 2 exists)
+      const user = users[1]; // Lucas (id: 2)
+      const event = events[2]; // Music Festival 2025 (id: 3)
+
+      if (!user || !event) {
+        console.error(
+          "❌ User or event does not exist. Check users and events array."
+        );
       } else {
-        console.log("❌ No events available to fetch reviews.");
+        try {
+          const favorite = await addFavorite(user.id, event.id);
+          if (favorite) {
+            console.log(`✅ User ${user.id} favorited Event ${event.id}`);
+          } else {
+            console.log(
+              `⚠️ User ${user.id} already favorited Event ${event.id}`
+            );
+          }
+        } catch (error) {
+          console.error("❌ Failed to add favorite:", error.message);
+        }
       }
+    } else {
+      console.error("❌ Not enough users or events to test.");
+    }
 
     // 🔹 Test getUserFavorites
-    console.log("\n➡️ Calling getUserFavorites for user 1...");
-    const favorites = await getUserFavorites(1);
+    console.log("\n➡️ Calling getUserFavorites for user 2...");
+    const favorites = await getUserFavorites(2);
     console.log("Result:", favorites);
 
     console.log("\n✅ Database tests completed successfully!");
