@@ -135,18 +135,23 @@ eventsRouter.patch("/:event_id", requireUser, async (req, res, next) => {
   }
 });
 
-eventsRouter.delete("/:event_id", async (req, res, next) => {
+eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
     const { event_id } = req.params;
+    const { id: user_id } = req.user; // Extract user_id from authenticated user
 
-    const deletedEvent = await deleteEvent(event_id);
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const deletedEvent = await deleteEvent(event_id, user_id);
 
     if (deletedEvent) {
       res.send({ event: deletedEvent });
     } else {
       next({
         name: "EventNotFoundError",
-        message: "Event not found.",
+        message: "Event not found or you don't have permission to delete it.",
       });
     }
   } catch (error) {

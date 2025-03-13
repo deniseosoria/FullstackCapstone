@@ -91,9 +91,9 @@ apiRouter.use('/events', eventsRouter);
 const bookingsRouter = require('./bookings');
 apiRouter.use('/bookings', bookingsRouter);
 
-// Import and use the reviews router for handling `/reviews` related routes
-const reviewsRouter = require('./reviews');
-apiRouter.use('/reviews', reviewsRouter);
+// // Import and use the reviews router for handling `/reviews` related routes
+// const reviewsRouter = require('./reviews');
+// apiRouter.use('/reviews', reviewsRouter);
 
 // Import and use the favorites router for handling `/favorites` related routes
 const favoritesRouter = require('./favorites');

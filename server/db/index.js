@@ -23,7 +23,7 @@ const client = new Client({
 // Create a new user
 async function createUser({ name, username, password, location, picture }) {
     try {
-      console.log("🔹 Inside createUser - received:", { name, username, password, location, picture });
+      console.log("Inside createUser - received:", { name, username, password, location, picture });
   
       if (!password) {
         throw new Error("Password is missing in createUser");
