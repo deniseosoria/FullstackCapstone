@@ -8,7 +8,7 @@ const { bookEvent, getUserBookings, cancelBooking } = require("../db");
 // Create a booking
 bookingsRouter.post("/", requireUser, async (req, res, next) => {
   try {
-    const { id: user_id } = req.params;
+    const { id: user_id } = req.user;
     const { event_id } = req.body;
 
     if (!user_id || !event_id) {
@@ -32,7 +32,8 @@ bookingsRouter.post("/", requireUser, async (req, res, next) => {
 // Get a user's bookings
 bookingsRouter.get("/:id", requireUser, async (req, res, next) => {
     try {
-        res.send(await getUserBookings(req.params.id));
+        const { id: user_id } = req.user;
+        res.send(await getUserBookings(user_id));
       }catch (error) {
         console.error("Error fetching bookings:", error);
         next(error);
@@ -52,9 +53,9 @@ bookingsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
       const canceledBooking = await cancelBooking(user_id, event_id);
   
       if (canceledBooking) {
-        res.json({ message: "Booking canceled successfully.", booking: canceledBooking });
+        res.status(200).json({ message: "Booking canceled successfully.", booking: canceledBooking });
       } else {
-        next({
+        res.status(404).json({
           name: "BookingNotFoundError",
           message: "No booking found for this event or user.",
         });

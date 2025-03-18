@@ -1,5 +1,4 @@
 require("dotenv").config({ path: "./.env" });
-
 const {
   client,
   createUser,
@@ -12,16 +11,20 @@ const {
   getEventById,
   bookEvent,
   getUserBookings,
+  cancelBooking,
   getEventReviews,
   addReview,
   editReview,
+  deleteReview,
   addFavorite,
   getUserFavorites,
+  removeFavorite,
 } = require("./index");
 
+// 🔹 Drop existing tables
 async function dropTables() {
   try {
-    console.log("Starting to drop tables...");
+    console.log("Dropping tables...");
 
     await client.query(`
         DROP TABLE IF EXISTS favorites CASCADE;
@@ -31,173 +34,250 @@ async function dropTables() {
         DROP TABLE IF EXISTS users CASCADE;
       `);
 
-    console.log("Finished dropping tables!");
+    console.log(" Finished dropping tables!");
   } catch (error) {
-    console.error("Error dropping tables!", error);
+    console.error(" Error dropping tables:", error);
     throw error;
   }
 }
 
+// 🔹 Create new tables
 async function createTables() {
   try {
-    console.log("Starting to build tables...");
+    console.log("Creating tables...");
 
     await client.query(`
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+  
         CREATE TABLE users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        location VARCHAR(255) NOT NULL,
-        picture TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          name VARCHAR(100) NOT NULL,
+          username VARCHAR(255) UNIQUE NOT NULL,
+          password TEXT NOT NULL,
+          location VARCHAR(255) NOT NULL,
+          picture TEXT,
+          created_at TIMESTAMP DEFAULT NOW()
         );
-
+  
         CREATE TABLE events (
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id) ON DELETE CASCADE,
-        event_name VARCHAR(255) NOT NULL,
-        description TEXT NOT NULL,
-        event_type VARCHAR(50),
-        address VARCHAR(255) NOT NULL, -- Changed from TEXT for potential indexing
-        price DECIMAL(10,2) DEFAULT 0.00,
-        capacity INT NOT NULL CHECK (capacity > 0), -- Added a constraint for capacity
-        date DATE NOT NULL,
-        start_time TIME NOT NULL,
-        end_time TIME NOT NULL CHECK (end_time > start_time), -- Ensures valid time range
-        picture TEXT, 
-        created_at TIMESTAMP DEFAULT NOW()
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          event_name VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL,
+          event_type VARCHAR(50),
+          address VARCHAR(255) NOT NULL, 
+          price DECIMAL(10,2) DEFAULT 0.00,
+          capacity INT NOT NULL CHECK (capacity > 0), 
+          date DATE NOT NULL,
+          start_time TIME NOT NULL,
+          end_time TIME NOT NULL CHECK (end_time > start_time), 
+          picture TEXT, 
+          created_at TIMESTAMP DEFAULT NOW()
         );
-
-
-
+  
         CREATE TABLE bookings (
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id) ON DELETE CASCADE,
-        event_id INT REFERENCES events(id) ON DELETE CASCADE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(user_id, event_id)
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT NOW(),
+          CONSTRAINT unique_booking UNIQUE(user_id, event_id)
         );
-
+  
         CREATE TABLE reviews (
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id) ON DELETE CASCADE,
-        event_id INT REFERENCES events(id) ON DELETE CASCADE,
-        rating INT CHECK (rating BETWEEN 1 AND 5),
-        text_review TEXT,
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(user_id, event_id) 
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+          rating INT CHECK (rating BETWEEN 1 AND 5),
+          text_review TEXT,
+          created_at TIMESTAMP DEFAULT NOW(),
+          CONSTRAINT unique_review UNIQUE(user_id, event_id)
         );
-
+  
         CREATE TABLE favorites (
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id) ON DELETE CASCADE,
-        event_id INT REFERENCES events(id) ON DELETE CASCADE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(user_id, event_id)
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+          event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT NOW(),
+          CONSTRAINT unique_favorite UNIQUE(user_id, event_id)
         );
-    `);
-    console.log("Finished building tables!");
+      `);
+
+    console.log(" Finished creating tables!");
   } catch (error) {
-    console.error("Error building tables!", error);
+    console.error(" Error creating tables:", error);
     throw error;
   }
 }
 
+// 🔹 Seed Users
 async function createInitialUsers() {
   try {
-    console.log("Starting to create users...");
+    console.log("Seeding users...");
 
     const users = [
       {
-        name: "denise",
-        username: "Denise The Great",
-        password: "localoca",
-        location: "Brooklyn, New York",
+        name: "Alice Johnson",
+        username: "alicej",
+        password: "password123",
+        location: "New York, NY",
       },
       {
-        name: "lucas",
-        username: "Lucus Gomez.com",
-        password: "casycasy",
-        location: "Queens, New York",
+        name: "Bob Smith",
+        username: "bobsmith",
+        password: "password123",
+        location: "Los Angeles, CA",
       },
       {
-        name: "jeffrey",
-        username: "Jeffrey Thomson",
-        password: "jeff2000",
-        location: "New York City, New York",
+        name: "Charlie Brown",
+        username: "charlieb",
+        password: "password123",
+        location: "Chicago, IL",
       },
     ];
 
     for (const user of users) {
-      console.log("Creating user:", user); // Ensure password exists
       await createUser(user);
     }
 
-    console.log("Finished creating users!");
+    console.log(" Finished seeding users!");
   } catch (error) {
-    console.error("Error creating users!", error);
+    console.error(" Error seeding users:", error);
     throw error;
   }
 }
 
+// 🔹 Seed Events
 async function createInitialEvents() {
   try {
+    console.log("Seeding events...");
+
     const users = await getAllUsers();
     if (users.length < 3) {
       throw new Error("Not enough users to create events");
     }
-    const [denise, lucas, jeffrey] = users;
 
-    console.log("Starting to create events ...");
+    const [alice, bob, charlie] = users;
 
     await createEvent({
-      user_id: denise.id, // Assign the user who created the event
-      event_name: "Tech Networking Night",
-      description:
-        "A networking event for software engineers and tech professionals.",
-      event_type: "Networking",
-      address: "123 Tech Hub, New York, NY",
-      price: 20.0,
-      capacity: 100,
-      date: "2025-04-15",
-      start_time: "18:00:00",
-      end_time: "21:00:00",
+      user_id: alice.id,
+      event_name: "Tech Conference",
+      description: "Annual tech conference with industry leaders",
+      event_type: "Conference",
+      address: "123 Tech St, San Francisco, CA",
+      price: 99.99,
+      capacity: 200,
+      date: "2025-06-15",
+      start_time: "09:00",
+      end_time: "17:00",
+      picture: "tech_conf.jpg",
     });
 
     await createEvent({
-      user_id: lucas.id,
-      event_name: "React.js Workshop",
-      description: "A hands-on workshop to learn React.js and hooks.",
-      event_type: "Workshop",
-      address: "456 Code Avenue, San Francisco, CA",
-      price: 50.0,
-      capacity: 50,
-      date: "2025-04-20",
-      start_time: "14:00:00",
-      end_time: "17:00:00",
-    });
-
-    await createEvent({
-      user_id: jeffrey.id,
-      event_name: "Music Festival 2025",
-      description:
-        "An outdoor festival featuring live performances from top artists.",
-      event_type: "Concert",
-      address: "789 Music Park, Miami, FL",
-      price: 75.0,
+      user_id: bob.id,
+      event_name: "Music Festival",
+      description: "Outdoor music festival with live bands",
+      event_type: "Festival",
+      address: "456 Music Rd, Austin, TX",
+      price: 49.99,
       capacity: 500,
-      date: "2025-05-10",
-      start_time: "15:00:00",
-      end_time: "23:00:00",
+      date: "2025-07-20",
+      start_time: "14:00",
+      end_time: "23:00",
+      picture: "music_fest.jpg",
     });
 
-    console.log("Finished creating events");
+    console.log(" Finished seeding events!");
   } catch (error) {
-    console.error(" Error creating events:", error);
+    console.error(" Error seeding events:", error);
+    throw error;
   }
 }
 
+// 🔹 Run Tests
+async function testDB() {
+  try {
+    console.log("Testing database functions...");
+
+    // Users
+    const users = await getAllUsers();
+    console.log("Users:", users);
+
+    // 🔹 Test updateUser
+    console.log("\n➡️ Updating user information...");
+    const updatedUser = await updateUser(users[0].id, {
+      location: "San Francisco, CA",
+    });
+    console.log(" Updated User:", updatedUser);
+
+    // 🔹 Test getUserById
+    console.log("\n Fetching user by ID...");
+    const userById = await getUserById(users[0].id);
+    console.log(" User by ID:", userById);
+
+    // Events
+    const events = await getAllEvents();
+    console.log("Events:", events);
+
+    // 🔹 Test updateEvent
+    console.log("\n Updating event...");
+    const updatedEvent = await updateEvent(events[0].id, { price: 79.99 });
+    console.log(" Updated Event:", updatedEvent);
+
+    // 🔹 Test getEventById
+    console.log("\n Fetching event by ID...");
+    const eventById = await getEventById(events[0].id);
+    console.log(" Event by ID:", eventById);
+
+    // Book an event
+    await bookEvent(users[0].id, events[0].id);
+    console.log(` User ${users[0].id} booked Event ${events[0].id}`);
+
+    // Get user bookings
+    const userBookings = await getUserBookings(users[0].id);
+    console.log("User Bookings:", userBookings);
+
+    // Cancel a booking
+    await cancelBooking(users[0].id, events[0].id);
+    console.log(" Booking canceled");
+
+    // Add a review
+    await addReview(users[0].id, events[0].id, 5, "Amazing event!");
+    console.log(" Review added");
+
+    // Edit review
+    await editReview(users[0].id, events[0].id, {
+      rating: 4,
+      text_review: "Updated review!",
+    });
+    console.log(" Review updated");
+
+    // Get event reviews
+    const reviews = await getEventReviews(events[0].id);
+    console.log("Event Reviews:", reviews);
+
+    // Delete review
+    await deleteReview(reviews[0].id, users[0].id);
+    console.log(" Review deleted");
+
+    // Add a favorite
+    await addFavorite(users[1].id, events[1].id);
+    console.log(" Favorite added");
+
+    // Get user favorites
+    const favorites = await getUserFavorites(users[1].id);
+    console.log("User Favorites:", favorites);
+
+    // Remove a favorite
+    await removeFavorite(users[1].id, events[1].id);
+    console.log(" Favorite removed");
+
+    console.log(" Database testing complete!");
+  } catch (error) {
+    console.error(" Error testing database:", error);
+  }
+}
+
+// 🔹 Rebuild DB
 async function rebuildDB() {
   try {
     await dropTables();
@@ -205,181 +285,26 @@ async function rebuildDB() {
     await createInitialUsers();
     await createInitialEvents();
   } catch (error) {
-    console.error("Error during rebuildDB!", error);
+    console.error(" Error rebuilding database:", error);
     throw error;
   }
 }
 
-async function testDB() {
-  try {
-    console.log("Starting to test database...");
-
-    // Test getAllUsers
-    console.log("Calling getAllUsers");
-    const users = await getAllUsers();
-    console.log("Result:", users);
-
-    // Test updateUser
-    console.log("Calling updateUser on users[0]");
-    const updateUserResult = await updateUser(users[0].id, {
-      name: "Newname Sogood",
-      location: "Lesterville, KY",
-    });
-    console.log("Result:", updateUserResult);
-
-    // Test getUserById
-    console.log("Calling gerUserById for user 1 ...");
-    const user = await getUserById(1);
-    console.log("Result: ", user);
-
-    // Test getAllEvents
-    console.log("Calling getAllEvents");
-    const allEvents = await getAllEvents();
-    console.log("Result:", allEvents);
-
-    // 🔹 Test updateEvent
-    console.log("\n➡️ Calling updateEvent on the first event...");
-    const events = await getAllEvents();
-    if (events.length === 0) {
-      console.log("❌ No events available to update.");
-    } else {
-      const updatedEvent = await updateEvent(events[0].id, {
-        event_name: "Updated Event Name",
-        price: 30.0,
-      });
-      console.log("✅ Updated Event:", updatedEvent);
-    }
-
-    // 🔹 Test getEventById
-    if (allEvents.length > 0) {
-      console.log("\n➡️ Calling getEventById for the first event...");
-      const eventById = await getEventById(allEvents[0].id);
-      console.log("Result:", eventById);
-    } else {
-      console.log("❌ No events available to fetch by ID.");
-    }
-
-    // Book the first user for the first event
-    await bookEvent(users[0].id, events[0].id);
-    console.log(`✅ User ${users[0].id} booked Event ${events[0].id}`);
-
-    // Book the second user for the second event (if available)
-    if (users.length > 1 && events.length > 1) {
-      await bookEvent(users[1].id, events[1].id);
-      console.log(`✅ User ${users[1].id} booked Event ${events[1].id}`);
-    }
-
-    // 🔹 Test getUserBookings
-    console.log("\n➡️ Calling getUserBookings for user 1...");
-    const bookings = await getUserBookings(1);
-    console.log("Result:", bookings);
-
-    // Add a review for the first user on the first event
-    await addReview(
-      users[0].id,
-      events[0].id,
-      5,
-      "Amazing event! Would highly recommend."
-    );
-    console.log(`✅ User ${users[0].id} reviewed Event ${events[0].id}`);
-
-    // Add a review for the second user on the second event (if available)
-    if (users.length > 1 && events.length > 1) {
-      await addReview(
-        users[1].id,
-        events[1].id,
-        4,
-        "Great experience, but could use more networking time."
-      );
-      console.log(`✅ User ${users[1].id} reviewed Event ${events[1].id}`);
-    }
-
-    // 🔹 Test getEventReviews
-    if (allEvents.length > 0) {
-      console.log("\n➡️ Calling getEventReviews for the first event...");
-      const reviews = await getEventReviews(allEvents[0].id);
-      console.log("Result:", reviews);
-    } else {
-      console.log("❌ No events available to fetch reviews.");
-    }
-
-    // 🔹 Test editReview
-    if (allEvents.length > 0) {
-      console.log("\n➡️ Editing review for first event...");
-      const editedReview = await editReview(1, allEvents[0].id, {
-        rating: 4,
-        text_review: "Updated review text.",
-      });
-      console.log("✅ Updated Review:", editedReview);
-    } else {
-      console.log("❌ No reviews available to edit.");
-    }
-
-    // 🔹 Test getEventReviews
-    if (allEvents.length > 0) {
-      console.log("\n➡️ Calling getEventReviews for the first event...");
-      const reviews = await getEventReviews(allEvents[0].id);
-      console.log("Result:", reviews);
-    } else {
-      console.log("❌ No events available to fetch reviews.");
-    }
-
-    console.log("Users:", users);
-    console.log("Events:", events);
-
-    // 🔹 Test addFavorite
-    if (users.length > 1 && events.length > 2) {
-      // Change condition to >2 (since index 2 exists)
-      const user = users[1]; // Lucas (id: 2)
-      const event = events[2]; // Music Festival 2025 (id: 3)
-
-      if (!user || !event) {
-        console.error(
-          "❌ User or event does not exist. Check users and events array."
-        );
-      } else {
-        try {
-          const favorite = await addFavorite(user.id, event.id);
-          if (favorite) {
-            console.log(`✅ User ${user.id} favorited Event ${event.id}`);
-          } else {
-            console.log(
-              `⚠️ User ${user.id} already favorited Event ${event.id}`
-            );
-          }
-        } catch (error) {
-          console.error("❌ Failed to add favorite:", error.message);
-        }
-      }
-    } else {
-      console.error("❌ Not enough users or events to test.");
-    }
-
-    // 🔹 Test getUserFavorites
-    console.log("\n➡️ Calling getUserFavorites for user 2...");
-    const favorites = await getUserFavorites(2);
-    console.log("Result:", favorites);
-
-    console.log("\n✅ Database tests completed successfully!");
-  } catch (error) {
-    console.error("Error testing database:", error);
-  }
-}
-
-// Start the database setup process
+// 🔹 Start Seeding Process
 async function start() {
   try {
     await client.connect();
-    console.log("Connected to database");
+    console.log(" Connected to database");
 
     await rebuildDB();
     await testDB();
   } catch (error) {
-    console.error("Error in start()", error);
+    console.error(" Error in start():", error);
   } finally {
-    await client.end(); // Ensures DB connection closes properly
-    console.log("Database connection closed.");
+    await client.end();
+    console.log(" Database connection closed.");
   }
 }
 
+// Run script
 start();

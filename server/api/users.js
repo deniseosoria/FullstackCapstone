@@ -2,12 +2,29 @@ const express = require('express');
 const usersRouter = express.Router();
 require('dotenv').config({path:"./.env"});
 const jwt = require('jsonwebtoken');
+const multer = require("multer");
 
 const { 
   createUser,
   getAllUsers,
   getUserByUsername,
 } = require('../db');
+
+//  Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save files in the 'uploads' folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Rename file
+  },
+});
+
+//  Middleware to handle image uploads
+const upload = multer({ storage });
+
+//  Serve uploaded images as static files
+usersRouter.use("/uploads", express.static("uploads"));
 
 usersRouter.get('/', async (req, res, next) => {
   try {
@@ -94,5 +111,45 @@ usersRouter.post('/register', async (req, res, next) => {
     next({ name, message });
   } 
 });
+
+// Update Event (with Image Upload)
+usersRouter.patch("/:user_id", requireUser, upload.single("picture"), async (req, res, next) => {
+    try {
+        const { id: user_id } = req.user; //  Extract user_id from authenticated user
+
+        if (!user_id) {
+            return res.status(401).json({ message: "Unauthorized" });
+          }
+      const {
+        username, password, name, location
+      } = req.body;
+  
+      const updateFields = {};
+  
+      if (username) updateFields.username = username;
+      if (password) updateFields.password = password;
+      if (event_type) updateFields.event_type = event_type;
+      if (address) updateFields.address = address;
+      if (req.file) updateFields.picture = `/uploads/${req.file.filename}`; //  Handle image update
+  
+      const originalEvent = await getEventById(event_id);
+  
+      if (!originalEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+  
+      if (originalEvent.user_id === req.user.id) {
+        const updatedEvent = await updateEvent(event_id, updateFields);
+        res.send({ event: updatedEvent });
+      } else {
+        next({
+          name: "UnauthorizedUserError",
+          message: "You cannot update an event that is not yours",
+        });
+      }
+    } catch ({ name, message }) {
+      next({ name, message });
+    }
+  });
 
 module.exports = usersRouter;
