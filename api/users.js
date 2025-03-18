@@ -12,6 +12,7 @@ const {
   createUser,
   getAllUsers,
   getUserByUsername,
+  getUserById,
   updateUser,
   deleteUser
 } = require('../db');
@@ -168,6 +169,30 @@ usersRouter.patch("/:user_id", requireUser, upload.single("picture"), async (req
       next(error);
     }
   });
+
+  // Protected Route: Get User Account Details
+router.get("/account", requireUser, async (req, res) => {
+  try {
+    // `requireUser` middleware ensures `req.user` is set
+    const user = await getUserById(req.user.id); 
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      location: user.location,
+      picture: user.picture,
+      createdAt: user.created_at, // Adjust based on your DB structure
+    });
+  } catch (error) {
+    console.error("Error fetching account:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
   
 
 module.exports = usersRouter;
