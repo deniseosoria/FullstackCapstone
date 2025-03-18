@@ -11,23 +11,31 @@ bookingsRouter.post("/", requireUser, async (req, res, next) => {
     const { id: user_id } = req.user;
     const { event_id } = req.body;
 
+    // Check if the values are actually UUIDs
     if (!user_id || !event_id) {
       return res.status(400).json({ error: "Missing user_id or event_id." });
     }
 
-    const booking = await bookEvent({ user_id, event_id });
+    // Log to see the actual values being sent
+    console.log("Creating booking with:", { user_id, event_id });
+
+    // Ensure both are treated as UUIDs when passed to bookEvent
+    const booking = await bookEvent(user_id, event_id);
+
     if (booking) {
-      res.send(booking);
+      res.status(201).json(booking);
     } else {
       next({
         name: "CreationError",
         message: "There was an error creating your booking. Please try again.",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (error) {
+    console.error("Error in /bookings route:", error);
+    next(error);
   }
 });
+
 
 // Get a user's bookings
 bookingsRouter.get("/:id", requireUser, async (req, res, next) => {

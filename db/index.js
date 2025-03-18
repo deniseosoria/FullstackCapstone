@@ -223,13 +223,13 @@ try{
   
 };
 
-const deleteEvent = async (id, userId) => {
+const deleteEvent = async (id, user_id) => {
   try{
     const result = await client.query(
-      "DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *",
-      [id, userId]
+      `DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *;`,
+      [id, user_id]
     );
-    return result.rows[0];
+    return result.rows[0]; // Returns the deleted event
     }catch (error) {
       console.error(" Error in deleteEvent:", error);
       throw error;
@@ -240,12 +240,18 @@ const deleteEvent = async (id, userId) => {
 /**
  * BOOKINGS Methods
  */
-const bookEvent = async (userId, eventId) => {
+const bookEvent = async (user_id, event_id) => {
   try {
-    const { rows } = await client.query("INSERT INTO bookings (user_id, event_id) VALUES ($1, $2) RETURNING *", [userId, eventId]);
+    console.log("Inserting into bookings:", { user_id, event_id }); // Debugging
+
+    const { rows } = await client.query(
+      "INSERT INTO bookings (user_id, event_id) VALUES ($1, $2) RETURNING *",
+      [user_id, event_id]
+    );
+
     return rows[0];
   } catch (error) {
-    console.error(" Error in bookEvent:", error);
+    console.error("Error in bookEvent:", error);
     throw error;
   }
 };

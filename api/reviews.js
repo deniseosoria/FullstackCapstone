@@ -18,9 +18,13 @@ reviewsRouter.get("/:event_id", async (req, res, next) => {
   }
 });
 
-// POST a new review (Requires authentication)
-reviewsRouter.post("/", requireUser, async (req, res, next) => {
-  const { event_id, rating, text_review } = req.body;
+reviewsRouter.post("/:event_id", requireUser, async (req, res, next) => {
+  console.log("Received POST request at /reviews/:event_id");
+  console.log("Params:", req.params);
+  console.log("Body:", req.body);
+
+  const { event_id } = req.params;
+  const { rating, text_review } = req.body;
 
   if (!event_id || !rating || !text_review) {
     return next({
@@ -30,14 +34,8 @@ reviewsRouter.post("/", requireUser, async (req, res, next) => {
   }
 
   try {
-    const reviewData = {
-      user_id: req.user.id,
-      event_id,
-      rating,
-      text_review,
-    };
-
-    const review = await addReview(reviewData);
+    const review = await addReview(req.user.id, event_id, rating, text_review);
+    console.log("New Review:", review);
 
     if (review) {
       res.status(201).send(review);
@@ -47,10 +45,12 @@ reviewsRouter.post("/", requireUser, async (req, res, next) => {
         message: "There was an error creating your review. Please try again.",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (error) {
+    console.error("Error creating review:", error);
+    next(error);
   }
 });
+
 
 // PATCH (edit) a review (Requires authentication)
 reviewsRouter.patch("/:event_id", requireUser, async (req, res, next) => {

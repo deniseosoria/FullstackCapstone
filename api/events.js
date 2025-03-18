@@ -29,7 +29,7 @@ const upload = multer({ storage });
 //  Serve uploaded images as static files
 eventsRouter.use("/uploads", express.static("uploads"));
 
-// 🔹 Get All Events
+//  Get All Events
 eventsRouter.get("/", async (req, res, next) => {
   try {
     const events = await getAllEvents();
@@ -136,16 +136,15 @@ eventsRouter.patch("/:event_id", requireUser, upload.single("picture"), async (r
 eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
     const { event_id } = req.params;
-    const { id: user_id } = req.user; //  Extract user_id from authenticated user
+    const { id: user_id } = req.user;
 
-    if (!user_id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    console.log("Deleting Event ID:", event_id); // Debugging
+    console.log("User ID:", user_id);
 
     const deletedEvent = await deleteEvent(event_id, user_id);
 
     if (deletedEvent) {
-      res.send({ event: deletedEvent });
+      res.send({ event: deletedEvent, message: "Event successfully deleted." });
     } else {
       next({
         name: "EventNotFoundError",
@@ -153,8 +152,10 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
       });
     }
   } catch (error) {
+    console.error("Delete Event Error:", error);
     next(error);
   }
 });
+
 
 module.exports = eventsRouter;
