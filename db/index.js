@@ -115,6 +115,20 @@ const getUserById = async (id) => {
   }
 };
 
+async function deleteUser(user_id) {
+  try {
+    // Delete user and cascade delete any related data (bookings, events, etc.)
+    const { rows: [deletedUser] } = await client.query(
+      `DELETE FROM users WHERE id = $1 RETURNING *;`,
+      [user_id]
+    );
+
+    return deletedUser;
+  } catch (error) {
+    throw error;
+  }
+}
+
 /**
  * EVENTS Methods
  */
@@ -394,6 +408,7 @@ module.exports = {
   getAllUsers,
   getUserByUsername,
   getUserById,
+  deleteUser,
   createEvent,
   updateEvent,
   getAllEvents,

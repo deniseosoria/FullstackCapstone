@@ -10,15 +10,6 @@ require('dotenv').config({ path: "./.env" });
 // Use JWT_SECRET from environment variables, defaulting to "shhh" if not provided
 const JWT_SECRET = process.env.JWT_SECRET || "shhh";
 
-const app = express();
-app.use(express.json());
-
-//for deployment only
-const path = require('path');
-app.get('/', (req, res)=> res.sendFile(path.join(__dirname, '../client/dist/index.html')));
-app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets'))); 
-
-
 // ================================
 // Middleware: Authenticate User
 // ================================
@@ -110,6 +101,20 @@ apiRouter.use((error, req, res, next) => {
     message: error.message, // Descriptive error message
   });
 });
+
+apiRouter.use((req, res, next) => {
+  console.log("\n✅ Debugging API Routes:");
+  apiRouter.stack.forEach((middleware) => {
+    if (middleware.route) {
+      console.log(
+        `${Object.keys(middleware.route.methods).join(", ").toUpperCase()} ${middleware.route.path}`
+      );
+    }
+  });
+  console.log("\n");
+  next();
+});
+
 
 // Export the API router for use in other parts of the application
 module.exports = apiRouter;
