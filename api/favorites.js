@@ -3,19 +3,22 @@ const favoritesRouter = express.Router();
 
 const { requireUser } = require("./utils");
 
+
 const { addFavorite, getUserFavorites, removeFavorite } = require("../db");
 
-// Create a favotite event
-favoritesRouter.post("/", requireUser, async (req, res, next) => {
+// Create a favorite event
+favoritesRouter.post("/:event_id", requireUser, async (req, res, next) => {
   try {
-    const { id: user_id } = req.user;
-    const { event_id } = req.body;
+    const user_id = req.user.id;  // Ensure this is extracted as a string, not an object
+    const { event_id } = req.params; // Extract from params
 
     if (!user_id || !event_id) {
       return res.status(400).json({ error: "Missing user_id or event_id." });
     }
 
+    // Ensure IDs are passed correctly as UUIDs
     const favorite = await addFavorite({ user_id, event_id });
+
     if (favorite) {
       res.send(favorite);
     } else {
@@ -24,13 +27,16 @@ favoritesRouter.post("/", requireUser, async (req, res, next) => {
         message: "There was an error creating your favorite event. Please try again.",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (error) {
+    console.error("Error in POST /favorites/:event_id:", error);
+    next(error);
   }
 });
 
+
+
 // Get a user's favorites
-favoritesRouter.get("/:id", requireUser, async (req, res, next) => {
+favoritesRouter.get("/", requireUser, async (req, res, next) => {
     try {
         const { id: user_id } = req.user;
         res.send(await getUserFavorites(user_id));
