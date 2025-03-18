@@ -4,6 +4,7 @@ const server = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const path = require("path"); //  Import path for serving static files
+const cors = require('cors');
 
 //  Import API Router
 const apiRouter = require("./api");
@@ -13,6 +14,9 @@ const { client } = require("./db");
 client.connect();
 
 // Middleware Setup
+server.use(cors());
+
+
 server.use(bodyParser.json()); // Parse JSON bodies
 server.use(morgan("dev")); // Log requests
 

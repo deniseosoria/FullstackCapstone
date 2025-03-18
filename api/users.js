@@ -171,7 +171,7 @@ usersRouter.patch("/:user_id", requireUser, upload.single("picture"), async (req
   });
 
   // Protected Route: Get User Account Details
-router.get("/account", requireUser, async (req, res) => {
+usersRouter.get("/account", requireUser, async (req, res) => {
   try {
     // `requireUser` middleware ensures `req.user` is set
     const user = await getUserById(req.user.id); 

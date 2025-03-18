@@ -2,14 +2,24 @@ const API_URL = "http://localhost:3000/api"; // Base API URL
 
 export async function fetchEvents() {
     try {
-      const response = await fetch(`${API_URL}/events/`);
-      const result = await response.json();
-      return result.events;
-  
+        const response = await fetch(`${API_URL}/events/`);
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (!Array.isArray(result)) {
+            throw new Error("Invalid data format received.");
+        }
+        return result;
+        
     } catch (err) {
-      return []; // Return an empty array on error
+        console.error("Error fetching events:", err.message);
+        return []; // Return an empty array on error
     }
-  }
+}
 
 // const fetchUserAccount = async () => {
 //     try {
