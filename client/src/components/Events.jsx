@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchEvents } from "../api/index"; // Adjust path if needed
+import { fetchAllEvents } from "../api/index"; // Adjust path if needed
 
 const Events = () => {
   const [events, setEvents] = useState([]);
@@ -10,11 +10,10 @@ const Events = () => {
   useEffect(() => {
     async function getData() {
       try {
-        const eventsData = await fetchEvents();
-        if (!Array.isArray(eventsData)) {
-          throw new Error("Invalid events data received.");
+        const eventsData = await fetchAllEvents();
+        if (eventsData) {
+          setEvents(eventsData);
         }
-        setEvents(eventsData);
       } catch (err) {
         setError(err.message || "Failed to load events. Please try again later.");
       } finally {
@@ -43,27 +42,27 @@ const Events = () => {
   const formatEventDate = (dateString, timeString) => {
     if (!dateString || !timeString) return "Unknown Date & Time";
 
-    // Convert date string into a proper Date object
+    // Convert date string into a Date object
     const eventDate = new Date(dateString);
+    if (isNaN(eventDate)) return "Invalid Date";
 
     // Format the date (e.g., "Saturday, March 25")
     const formattedDate = eventDate.toLocaleDateString("en-US", {
-        weekday: "long", // Saturday
-        month: "long",   // March
-        day: "numeric",  // 25
+      weekday: "long", // Saturday
+      month: "long", // March
+      day: "numeric", // 25
     });
 
-    // Convert 24-hour time to 12-hour format
-    const [hours, minutes, seconds] = timeString.split(":");
-    const hours12 = (parseInt(hours) % 12) || 12; // Convert 24h to 12h format
-    const amPm = parseInt(hours) >= 12 ? "PM" : "AM";
+    // Handle time properly
+    const [hours, minutes] = timeString.split(":").map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return formattedDate; // If time is invalid, return only the date
 
-    // Format time (e.g., "10:00 PM")
-    const formattedTime = `${hours12}:${minutes} ${amPm}`;
+    const hours12 = (hours % 12) || 12; // Convert 24h to 12h format
+    const amPm = hours >= 12 ? "PM" : "AM";
+    const formattedTime = `${hours12}:${minutes.toString().padStart(2, "0")} ${amPm}`;
 
     return `${formattedDate} ${formattedTime}`;
-};
-
+  };
 
   return (
     <div className="events">
@@ -74,10 +73,10 @@ const Events = () => {
             <div>
               <h3>{event.event_name || "Unknown Event"}</h3>
               <h4>{formatEventDate(event.date, event.start_time)}</h4>
-              <h4>{event.price ? `$${event.price}` : "Free or Unknown Price"}</h4>
+              <h4>{event.price !== null && event.price !== undefined ? (event.price === 0 ? "Free" : `$${event.price}`) : "Price Unavailable"}</h4>
             </div>
             <img
-              src={event.picture || "https://placehold.co/150x220/zzz/000?text=NoImage"}
+              src={event.picture && event.picture.trim() ? event.picture : "https://placehold.co/150x220/zzz/000?text=NoImage"}
               onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
               alt={event.event_name || "Event Image"}
               style={{ maxWidth: "150px", height: "auto" }}
@@ -90,3 +89,4 @@ const Events = () => {
 };
 
 export default Events;
+

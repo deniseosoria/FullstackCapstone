@@ -1,4 +1,4 @@
-const { PORT = 3000 } = process.env;
+const { PORT = 5000 } = process.env;
 const express = require("express");
 const server = express();
 const bodyParser = require("body-parser");
@@ -9,24 +9,25 @@ const cors = require('cors');
 //  Import API Router
 const apiRouter = require("./api");
 
-//  Import database client & connect
-const { client } = require("./db");
-client.connect();
-
-// Middleware Setup
-server.use(cors());
+// // Middleware Setup
+// server.use(cors());
 
 
 server.use(bodyParser.json()); // Parse JSON bodies
 server.use(morgan("dev")); // Log requests
 
 //  Body Logger Middleware
+server.use(express.json()); // Make sure JSON body parsing is enabled
+
 server.use((req, res, next) => {
-  console.log("<____Body Logger START____>");
-  console.log(req.body);
-  console.log("<_____Body Logger END_____>");
+  if (req.method !== "GET") {  // Skip logging for GET requests
+      console.log("<____Body Logger START____>");
+      console.log(req.body && Object.keys(req.body).length > 0 ? req.body : "No body data received");
+      console.log("<_____Body Logger END_____>");
+  }
   next();
 });
+
 
 //  Serve uploaded images statically
 server.use("/uploads", express.static("uploads"));
@@ -42,16 +43,6 @@ server.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
-//  Debugging Middleware - Check Registered Routes
-console.log("\n✅ Registered Routes:");
-server._router.stack.forEach((middleware) => {
-  if (middleware.route) {
-    console.log(
-      `${Object.keys(middleware.route.methods).join(", ").toUpperCase()} ${middleware.route.path}`
-    );
-  }
-});
-console.log("\n");
 
 
 //  Global 404 Handler (Must Be Placed Last)

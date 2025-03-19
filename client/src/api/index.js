@@ -1,27 +1,91 @@
-const API_URL = "http://localhost:3000/api"; // Base API URL
+// const API_URL = "http://localhost:3001/api"; // Base API URL
 
-export async function fetchEvents() {
+export async function fetchAllEvents() {
     try {
-        const response = await fetch(`${API_URL}/events/`);
+        const response = await fetch("http://localhost:3000/api/events/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
         if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
 
-        const result = await response.json();
-
-        if (!Array.isArray(result)) {
-            throw new Error("Invalid data format received.");
-        }
-        return result;
-        
-    } catch (err) {
-        console.error("Error fetching events:", err.message);
-        return []; // Return an empty array on error
+        const events = await response.json();
+        console.log("Fetched events:", events); // ✅ Log response
+        return events;
+    } catch (error) {
+        console.error("Failed to fetch events:", error.message);
+        return []; // Return an empty array to prevent errors in `map()`
     }
 }
 
-// const fetchUserAccount = async () => {
+
+// export async function fetchLogin(formData) {
+//     try {
+//       const response = await fetch(
+//         `${API_URL}/users/login`,
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//             email: formData.username,
+//             password: formData.password,
+//           }),
+//         }
+//       );
+  
+//       const result = await response.json();
+  
+//       if (!response.ok) {
+//         if (result.name === "IncorrectCredentialsErrorr") {
+//           throw new Error("Username or password is incorrect");
+//         }
+//         throw new Error(result.message || "Login failed.");
+//       }
+  
+//       return result; // Expected { token, message }
+//     } catch (err) {
+//       return { error: err.message }; // Ensure the frontend receives an error
+//     }
+//   }
+
+//   export async function fetchRegister(formData) {
+//     try {
+//       const response = await fetch(
+//         `${API_URL}/users/register`,
+//         {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//             name: formData.name,
+//             username: formData.username,
+//             password: formData.password,
+//             location: formData.location,
+//             picture: formData.picture
+//           }),
+//         }
+//       );
+  
+//       const result = await response.json();
+  
+//       if (!response.ok) {
+//         if (result.name === "UserExistsError") {
+//           throw new Error("Account already exists. Please log in.");
+//         }
+//         throw new Error(result.message || "Registration failed.");
+//       }
+  
+//       return result; // Expected { token, message }
+//     } catch (err) {
+//       return { error: err.message }; // Ensure the frontend receives an error
+//     }
+//   }
+  
+
+// export async function fetchUserAccount {
 //     try {
 //         const token = localStorage.getItem("token"); // Retrieve token from storage
 
