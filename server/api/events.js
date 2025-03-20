@@ -5,7 +5,7 @@ const path = require("path");
 
 const { requireUser } = require("./utils");
 
-const { createEvent, getAllEvents, updateEvent, getEventById, deleteEvent } =
+const { createEvent, getAllEvents, updateEvent, getEventById, getUserEvents, deleteEvent } =
   require("../db/db");
 
 //  Configure multer for file storage
@@ -137,6 +137,17 @@ eventsRouter.patch(
   }
 );
 
+eventsRouter.get("/:user_id", requireUser, async (req, res, next) => {
+  try{
+    const { id: user_id } = req.user;
+
+    const events = await getUserEvents(user_id);
+    res.send(events);
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
+})
+
 // 🔹 Delete Event
 eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
@@ -156,9 +167,8 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
         message: "Event not found or you don't have permission to delete it.",
       });
     }
-  } catch (error) {
-    console.error("Delete Event Error:", error);
-    next(error);
+  } catch ({ name, message }) {
+    next({ name, message });
   }
 });
 

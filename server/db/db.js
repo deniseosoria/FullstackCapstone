@@ -232,6 +232,17 @@ const getEventById = async (id) => {
   }
 };
 
+const getUserEvents = async (userId) => {
+  try {
+    const result = await client.query("SELECT * FROM events WHERE user_id = $1", [userId]);
+    return result.rows.length ? result.rows : []; // Always return an array
+  } catch (error) {
+    console.error("Error in getEventByUserId:", error);
+    throw error;
+  }
+};
+
+
 const deleteEvent = async (id, user_id) => {
   try {
     const result = await client.query(
@@ -417,6 +428,7 @@ module.exports = {
   updateEvent,
   getAllEvents,
   getEventById,
+  getUserEvents,
   deleteEvent,
   bookEvent,
   getUserBookings,
