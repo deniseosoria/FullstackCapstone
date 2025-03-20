@@ -1,12 +1,8 @@
 const express = require("express");
 const reviewsRouter = express.Router();
 const { requireUser } = require("./utils");
-const {
-  addReview,
-  getEventReviews,
-  editReview,
-  deleteReview,
-} = require("../db");
+const { addReview, getEventReviews, editReview, deleteReview } =
+  require("../db/db");
 
 // GET reviews for an event (No authentication required)
 reviewsRouter.get("/:event_id", async (req, res, next) => {
@@ -51,7 +47,6 @@ reviewsRouter.post("/:event_id", requireUser, async (req, res, next) => {
   }
 });
 
-
 // PATCH (edit) a review (Requires authentication)
 reviewsRouter.patch("/:event_id", requireUser, async (req, res, next) => {
   const { event_id } = req.params;
@@ -61,20 +56,25 @@ reviewsRouter.patch("/:event_id", requireUser, async (req, res, next) => {
   if (!rating && !text_review) {
     return next({
       name: "MissingFieldsError",
-      message: "At least one field (rating or text_review) is required to update.",
+      message:
+        "At least one field (rating or text_review) is required to update.",
     });
   }
 
   try {
     // Ensure the user can only edit their own review
-    const updatedReview = await editReview(user_id, event_id, { rating, text_review });
+    const updatedReview = await editReview(user_id, event_id, {
+      rating,
+      text_review,
+    });
 
     if (updatedReview) {
       res.status(200).send(updatedReview);
     } else {
       next({
         name: "EditError",
-        message: "Error updating review. Either review doesn't exist or you don't have permission.",
+        message:
+          "Error updating review. Either review doesn't exist or you don't have permission.",
       });
     }
   } catch ({ name, message }) {
@@ -83,26 +83,23 @@ reviewsRouter.patch("/:event_id", requireUser, async (req, res, next) => {
 });
 
 reviewsRouter.delete("/:review_id", requireUser, async (req, res, next) => {
-    try {
-      const { review_id } = req.params;
-      const { id: user_id } = req.user; // Extract user_id from authenticated user
-  
-      const deletedReview = await deleteReview(review_id, user_id);
-  
-      if (deletedReview) {
-        res.status(204).send(); // No content on successful deletion
-      } else {
-        next({
-          name: "ReviewNotFoundError",
-          message: "Review not found or you don't have permission to delete it.",
-        });
-      }
-    } catch (error) {
-      next(error);
+  try {
+    const { review_id } = req.params;
+    const { id: user_id } = req.user; // Extract user_id from authenticated user
+
+    const deletedReview = await deleteReview(review_id, user_id);
+
+    if (deletedReview) {
+      res.status(204).send(); // No content on successful deletion
+    } else {
+      next({
+        name: "ReviewNotFoundError",
+        message: "Review not found or you don't have permission to delete it.",
+      });
     }
-  });
-  
-
-
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = reviewsRouter;

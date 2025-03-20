@@ -1,21 +1,21 @@
-const express = require('express');
+const express = require("express");
 const usersRouter = express.Router();
-require('dotenv').config({path:"./.env"});
-const jwt = require('jsonwebtoken');
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const bcrypt = require("bcrypt");
 
 const { requireUser } = require("./utils");
 
-const { 
+const {
   createUser,
   getAllUsers,
   getUserByUsername,
   getUserById,
   updateUser,
-  deleteUser
-} = require('../db');
+  deleteUser,
+} = require("../db/db");
 
 //  Configure multer for file storage
 const storage = multer.diskStorage({
@@ -33,19 +33,19 @@ const upload = multer({ storage });
 //  Serve uploaded images as static files
 usersRouter.use("/uploads", express.static("uploads"));
 
-usersRouter.get('/', async (req, res, next) => {
+usersRouter.get("/", async (req, res, next) => {
   try {
     const users = await getAllUsers();
-  
+
     res.send({
-      users
+      users,
     });
   } catch ({ name, message }) {
     next({ name, message });
   }
 });
 
-usersRouter.post('/login', async (req, res, next) => {
+usersRouter.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -56,39 +56,50 @@ usersRouter.post('/login', async (req, res, next) => {
   }
 
   try {
+    console.log("Login request received for:", username); // Debugging
     const user = await getUserByUsername(username);
+    console.log("User found:", user); // Debugging
 
     if (!user) {
-      return next({ name: "IncorrectCredentialsError", message: "Username or password is incorrect" });
+      return next({
+        name: "IncorrectCredentialsError",
+        message: "Username or password is incorrect",
+      });
     }
 
-    //  Compare hashed password using bcrypt
+    // Compare hashed password using bcrypt
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", passwordMatch); // Debugging
 
     if (!passwordMatch) {
-      return next({ name: "IncorrectCredentialsError", message: "Username or password is incorrect" });
+      return next({
+        name: "IncorrectCredentialsError",
+        message: "Username or password is incorrect",
+      });
     }
 
-    const token = jwt.sign({ id: user.id, username }, process.env.JWT_SECRET, { expiresIn: "1w" });
-
+    const token = jwt.sign(
+      { id: user.id, username },
+      process.env.JWT_SECRET || "shhh",
+      { expiresIn: "1w" }
+    );
     res.send({ message: "You're logged in!", token });
   } catch (error) {
-    console.error(error);
+    console.error("Login Error:", error);
     next(error);
   }
 });
 
-
-usersRouter.post('/register', async (req, res, next) => {
+usersRouter.post("/register", async (req, res, next) => {
   const { username, password, name, location } = req.body;
 
   try {
     const _user = await getUserByUsername(username);
-  
+
     if (_user) {
       next({
-        name: 'UserExistsError',
-        message: 'A user by that username already exists'
+        name: "UserExistsError",
+        message: "A user by that username already exists",
       });
     }
 
@@ -99,42 +110,52 @@ usersRouter.post('/register', async (req, res, next) => {
       location,
     });
 
-    const token = jwt.sign({ 
-      id: user.id, 
-      username
-    }, process.env.JWT_SECRET, {
-      expiresIn: '1w'
-    });
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username,
+      },
+      process.env.JWT_SECRET || "shhh",
+      {
+        expiresIn: "1w",
+      }
+    );
 
-    res.send({ 
+    res.send({
       message: "thank you for signing up",
-      token 
+      token,
     });
   } catch ({ name, message }) {
     next({ name, message });
-  } 
+  }
 });
 
 // Update User (with Image Upload)
-usersRouter.patch("/:user_id", requireUser, upload.single("picture"), async (req, res, next) => {
+usersRouter.patch(
+  "/:user_id",
+  requireUser,
+  upload.single("picture"),
+  async (req, res, next) => {
     try {
       const { user_id } = req.params;
       const { username, password, name, location } = req.body;
-  
+
       if (req.user.id !== user_id) {
-        return res.status(403).json({ message: "You cannot update another user's profile" });
+        return res
+          .status(403)
+          .json({ message: "You cannot update another user's profile" });
       }
-  
+
       const updateFields = {};
-  
+
       if (username) updateFields.username = username;
       if (password) updateFields.password = await bcrypt.hash(password, 10); //  Hash new password
       if (name) updateFields.name = name;
       if (location) updateFields.location = location;
       if (req.file) updateFields.picture = `/uploads/${req.file.filename}`; //  Store image path
-  
+
       const updatedUser = await updateUser(user_id, updateFields);
-  
+
       if (updatedUser) {
         res.send({ message: "User updated successfully", user: updatedUser });
       } else {
@@ -143,38 +164,44 @@ usersRouter.patch("/:user_id", requireUser, upload.single("picture"), async (req
     } catch ({ name, message }) {
       next({ name, message });
     }
-  });  
+  }
+);
 
+usersRouter.delete("/:user_id", requireUser, async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
 
-  usersRouter.delete("/:user_id", requireUser, async (req, res, next) => {
-    try {
-      const { user_id } = req.params;
-  
-      console.log("Deleting user with ID:", user_id); // Debugging step
-  
-      // Ensure the user can only delete their own account
-      if (req.user.id !== user_id) {
-        return res.status(403).json({ message: "You are not allowed to delete another user's account." });
-      }
-  
-      const deletedUser = await deleteUser(user_id);
-  
-      if (!deletedUser) {
-        return res.status(404).json({ message: "User not found or already deleted." });
-      }
-  
-      res.send({ message: "User deleted successfully", user: deletedUser });
-    } catch (error) {
-      console.error("Error in DELETE /users/:user_id:", error); // Debugging step
-      next(error);
+    console.log("Deleting user with ID:", user_id); // Debugging step
+
+    // Ensure the user can only delete their own account
+    if (req.user.id !== user_id) {
+      return res
+        .status(403)
+        .json({
+          message: "You are not allowed to delete another user's account.",
+        });
     }
-  });
 
-  // Protected Route: Get User Account Details
+    const deletedUser = await deleteUser(user_id);
+
+    if (!deletedUser) {
+      return res
+        .status(404)
+        .json({ message: "User not found or already deleted." });
+    }
+
+    res.send({ message: "User deleted successfully", user: deletedUser });
+  } catch (error) {
+    console.error("Error in DELETE /users/:user_id:", error); // Debugging step
+    next(error);
+  }
+});
+
+// Protected Route: Get User Account Details
 usersRouter.get("/account", requireUser, async (req, res) => {
   try {
     // `requireUser` middleware ensures `req.user` is set
-    const user = await getUserById(req.user.id); 
+    const user = await getUserById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -193,6 +220,5 @@ usersRouter.get("/account", requireUser, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-  
 
 module.exports = usersRouter;

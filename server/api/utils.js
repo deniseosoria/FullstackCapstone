@@ -1,9 +1,9 @@
 // Import required modules
 const jwt = require("jsonwebtoken"); // JWT library for verifying and decoding tokens
-const { getUserById } = require("../db"); // Function to fetch a user by ID from the database
+const { getUserById } = require("../db/db"); // Function to fetch a user by ID from the database
 
 // Load environment variables from .env file
-require('dotenv').config({ path: "./.env" });
+require("dotenv").config();
 
 /**
  * Middleware: requireUser
@@ -17,7 +17,9 @@ async function requireUser(req, res, next) {
 
   // Step 1: Check if Authorization header is missing or incorrectly formatted
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized: No valid token provided" });
+    return res
+      .status(401)
+      .json({ error: "Unauthorized: No valid token provided" });
   }
 
   // Step 2: Extract the JWT token (remove "Bearer " prefix)

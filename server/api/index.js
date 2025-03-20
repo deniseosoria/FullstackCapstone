@@ -1,11 +1,11 @@
 // Import required modules
-const express = require('express');  // Express framework for creating APIs
-const apiRouter = express.Router();  // Create an Express Router instance
-const jwt = require('jsonwebtoken'); // Library for working with JSON Web Tokens (JWT)
-const { getUserById } = require('../db'); // Import function to fetch user by ID from the database
+const express = require("express"); // Express framework for creating APIs
+const apiRouter = express.Router(); // Create an Express Router instance
+const jwt = require("jsonwebtoken"); // Library for working with JSON Web Tokens (JWT)
+const { getUserById } = require("../db/db"); // Import function to fetch user by ID from the database
 
 // Load environment variables from .env file
-require('dotenv').config({ path: "./.env" });
+require("dotenv").config();
 
 // Use JWT_SECRET from environment variables, defaulting to "shhh" if not provided
 const JWT_SECRET = process.env.JWT_SECRET || "shhh";
@@ -16,8 +16,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "shhh";
 
 // This middleware attempts to set `req.user` if a valid JWT token is provided
 apiRouter.use(async (req, res, next) => {
-  const prefix = 'Bearer '; // Expected format of the token in Authorization header
-  const auth = req.header('Authorization'); // Retrieve the Authorization header
+  const prefix = "Bearer "; // Expected format of the token in Authorization header
+  const auth = req.header("Authorization"); // Retrieve the Authorization header
 
   if (!auth) {
     return next(); // If no Authorization header is present, move to the next middleware
@@ -26,7 +26,7 @@ apiRouter.use(async (req, res, next) => {
   if (!auth.startsWith(prefix)) {
     // If the Authorization header does not start with "Bearer ", return an error
     return res.status(401).json({
-      name: 'AuthorizationHeaderError',
+      name: "AuthorizationHeaderError",
       message: `Authorization token must start with ${prefix}`,
     });
   }
@@ -36,7 +36,7 @@ apiRouter.use(async (req, res, next) => {
 
   try {
     // Verify and decode the JWT using the secret key
-    const { id } = jwt.verify(token, JWT_SECRET);
+    const { id } = jwt.verify(token, JWT_SECRET || "shhh");
 
     if (id) {
       // Fetch user details from the database using the user ID from the token
@@ -61,7 +61,7 @@ apiRouter.use(async (req, res, next) => {
 // Logs the user information if they are authenticated
 apiRouter.use((req, res, next) => {
   if (req.user) {
-    console.log('User is set:', req.user);
+    console.log("User is set:", req.user);
   }
   next(); // Move to the next middleware or route
 });
@@ -71,24 +71,24 @@ apiRouter.use((req, res, next) => {
 // ================================
 
 // Import and use the users router for handling `/users` related routes
-const usersRouter = require('./users');
-apiRouter.use('/users', usersRouter);
+const usersRouter = require("./users");
+apiRouter.use("/users", usersRouter);
 
 // Import and use the events router for handling `/events` related routes
-const eventsRouter = require('./events');
-apiRouter.use('/events', eventsRouter);
+const eventsRouter = require("./events");
+apiRouter.use("/events", eventsRouter);
 
 // Import and use the bookings router for handling `/bookings` related routes
-const bookingsRouter = require('./bookings');
-apiRouter.use('/bookings', bookingsRouter);
+const bookingsRouter = require("./bookings");
+apiRouter.use("/bookings", bookingsRouter);
 
 // Import and use the reviews router for handling `/reviews` related routes
-const reviewsRouter = require('./reviews');
-apiRouter.use('/reviews', reviewsRouter);
+const reviewsRouter = require("./reviews");
+apiRouter.use("/reviews", reviewsRouter);
 
 // Import and use the favorites router for handling `/favorites` related routes
-const favoritesRouter = require('./favorites');
-apiRouter.use('/favorites', favoritesRouter);
+const favoritesRouter = require("./favorites");
+apiRouter.use("/favorites", favoritesRouter);
 
 // ================================
 // Global Error Handling Middleware
@@ -107,14 +107,15 @@ apiRouter.use((req, res, next) => {
   apiRouter.stack.forEach((middleware) => {
     if (middleware.route) {
       console.log(
-        `${Object.keys(middleware.route.methods).join(", ").toUpperCase()} ${middleware.route.path}`
+        `${Object.keys(middleware.route.methods).join(", ").toUpperCase()} ${
+          middleware.route.path
+        }`
       );
     }
   });
   console.log("\n");
   next();
 });
-
 
 // Export the API router for use in other parts of the application
 module.exports = apiRouter;

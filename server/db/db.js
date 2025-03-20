@@ -1,20 +1,28 @@
-const { Client } = require("pg"); // imports the pg module
+// ==============================
+// IMPORTS & INITIAL SETUP
+// ==============================
+// require("dotenv").config({ path: "./.env" });
+const pg = require("pg");
 const bcrypt = require("bcrypt");
+
+
 const SALT_ROUNDS = 10;
 
-require("dotenv").config({ path: "./.env" });
+// ==============================
+// DATABASE CONNECTION (PostgreSQL)
+// ==============================
 
-const client = new Client({
-  user: process.env.DB_USER,
-  password: String(process.env.DB_PASSWORD), // Ensure it's a string
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
-});
+// // Get the database connection URL from environment variables
+// const DATABASE_URL = process.env.DATABASE_URL;
+
+// // Create a new PostgreSQL client using the connection string
+// const client = new pg.Client({
+//   connectionString: DATABASE_URL,
+// });
+
+const client = new pg.Client(
+  process.env.DATABASE_URL
+);
 
 /**
  * USER Methods
@@ -118,10 +126,11 @@ const getUserById = async (id) => {
 async function deleteUser(user_id) {
   try {
     // Delete user and cascade delete any related data (bookings, events, etc.)
-    const { rows: [deletedUser] } = await client.query(
-      `DELETE FROM users WHERE id = $1 RETURNING *;`,
-      [user_id]
-    );
+    const {
+      rows: [deletedUser],
+    } = await client.query(`DELETE FROM users WHERE id = $1 RETURNING *;`, [
+      user_id,
+    ]);
 
     return deletedUser;
   } catch (error) {
@@ -199,42 +208,41 @@ async function updateEvent(event_id, fields = {}) {
 }
 
 const getAllEvents = async (limit = 10, offset = 0) => {
-  try{
+  try {
     const result = await client.query(
       "SELECT * FROM events ORDER BY date ASC LIMIT $1 OFFSET $2",
       [limit, offset]
     );
     return result.rows;
-  }catch (error) {
+  } catch (error) {
     console.error(" Error in getAllEvents:", error);
     throw error;
   }
-  
 };
 
 const getEventById = async (id) => {
-try{
-  const result = await client.query("SELECT * FROM events WHERE id = $1", [id]);
-  return result.rows[0];
-  }catch (error) {
+  try {
+    const result = await client.query("SELECT * FROM events WHERE id = $1", [
+      id,
+    ]);
+    return result.rows[0];
+  } catch (error) {
     console.error(" Error in getEventById:", error);
     throw error;
   }
-  
 };
 
 const deleteEvent = async (id, user_id) => {
-  try{
+  try {
     const result = await client.query(
       `DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *;`,
       [id, user_id]
     );
     return result.rows[0]; // Returns the deleted event
-    }catch (error) {
-      console.error(" Error in deleteEvent:", error);
-      throw error;
-    }
-  
+  } catch (error) {
+    console.error(" Error in deleteEvent:", error);
+    throw error;
+  }
 };
 
 /**
@@ -268,8 +276,6 @@ const getUserBookings = async (userId) => {
     console.error(" Error in getUserBookings:", error);
     throw error;
   }
-
-  
 };
 
 // Cancel a booking
@@ -284,8 +290,6 @@ const cancelBooking = async (userId, eventId) => {
     console.error(" Error in cancelBooking:", error);
     throw error;
   }
-
-  
 };
 
 /**
@@ -316,7 +320,6 @@ const getEventReviews = async (event_id) => {
     console.error(" Error in getEventReviews:", error);
     throw error;
   }
-  
 };
 
 const editReview = async (userId, event_id, fields = {}) => {
@@ -327,8 +330,12 @@ const editReview = async (userId, event_id, fields = {}) => {
     .join(", ");
 
   try {
-    const { rows: [review] } = await client.query(
-      `UPDATE reviews SET ${setString} WHERE user_id=$${Object.keys(fields).length + 1} 
+    const {
+      rows: [review],
+    } = await client.query(
+      `UPDATE reviews SET ${setString} WHERE user_id=$${
+        Object.keys(fields).length + 1
+      } 
        AND event_id=$${Object.keys(fields).length + 2} RETURNING *;`,
       [...Object.values(fields), userId, event_id]
     );
@@ -352,7 +359,6 @@ const deleteReview = async (reviewId, userId) => {
     console.error(" Error in deleteReview:", error);
     throw error;
   }
-  
 };
 
 /**
@@ -383,7 +389,6 @@ const getUserFavorites = async (userId) => {
     console.error(" Error in getUserFavorites:", error);
     throw error;
   }
-  
 };
 
 // Remove an event from favorites
@@ -398,7 +403,6 @@ const removeFavorite = async (userId, eventId) => {
     console.error(" Error in removeFavorite:", error);
     throw error;
   }
-  
 };
 
 module.exports = {

@@ -11,9 +11,6 @@ const Events = () => {
     async function getData() {
       try {
         const eventsData = await fetchEvents();
-        if (!Array.isArray(eventsData)) {
-          throw new Error("Invalid events data received.");
-        }
         setEvents(eventsData);
       } catch (err) {
         setError(err.message || "Failed to load events. Please try again later.");

@@ -8,6 +8,7 @@ import Register from "./components/Register";
 import Account from "./components/Account";
 import "./App.css";
 
+
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
 
