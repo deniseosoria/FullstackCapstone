@@ -11,6 +11,7 @@ import {
   fetchUserBookings,
   fetchCreateReview,
 } from "../api";
+import "../SingleEvent.css";
 
 const SingleEvent = ({ token }) => {
   const { id } = useParams();
@@ -49,30 +50,18 @@ const SingleEvent = ({ token }) => {
   }, [id, token]);
 
   const formatEventDate = (dateString, timeString) => {
-    if (!dateString || !timeString) return "Unknown Date & Time";
-
     const eventDate = new Date(dateString);
-    if (isNaN(eventDate)) return "Invalid Date";
-
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const hours12 = hours % 12 || 12;
+    const amPm = hours >= 12 ? "PM" : "AM";
+    const formattedTime = `${hours12}:${minutes.toString().padStart(2, "0")} ${amPm}`;
     const formattedDate = eventDate.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
     });
-
-    const [hours, minutes] = timeString.split(":").map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return formattedDate;
-
-    const hours12 = hours % 12 || 12;
-    const amPm = hours >= 12 ? "PM" : "AM";
-    const formattedTime = `${hours12}:${minutes.toString().padStart(2, "0")} ${amPm}`;
-
     return `${formattedDate} ${formattedTime}`;
   };
-
-  const averageRating = reviews?.length
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-    : null;
 
   const toggleFavorite = async () => {
     try {
@@ -102,11 +91,11 @@ const SingleEvent = ({ token }) => {
 
   const submitReview = async () => {
     try {
-      const newReview = await fetchCreateReview(event.id, { rating, text_review: review }, token);
-      setReviews((prev) => [...prev, newReview]);
-      setSuccess("Review submitted successfully!");
+      await fetchCreateReview(event.id, { rating, text_review: review }, token);
+      const updatedReviews = await fetchEventReviews(id);
+      setReviews(updatedReviews);
       setReview("");
-      setRating(5);
+      setSuccess("Review submitted!");
     } catch (err) {
       setError("Failed to submit review.");
     }
@@ -116,7 +105,7 @@ const SingleEvent = ({ token }) => {
 
   if (error) {
     return (
-      <div>
+      <div className="single-event">
         <h2>Error</h2>
         <p>{error}</p>
         <Link to="/">Back to All Events</Link>
@@ -126,38 +115,35 @@ const SingleEvent = ({ token }) => {
 
   if (!event) {
     return (
-      <div>
+      <div className="single-event">
         <h2>Event not found.</h2>
         <Link to="/">Back to All Events</Link>
       </div>
     );
   }
 
+  const averageRating = reviews?.length
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
   return (
     <div className="single-event">
       <h1>{event.event_name || "Unknown Name"}</h1>
-
       {averageRating && <h3>Average Rating: {averageRating}⭐</h3>}
       <h3>{formatEventDate(event.date, event.start_time)}</h3>
 
       <img
         src={event.picture?.trim() || "https://placehold.co/150x220/zzz/000?text=NoImage"}
-        onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
         alt={event.event_name || "Event Image"}
-        style={{ maxWidth: "150px", height: "auto" }}
+        onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
       />
 
       <h4>
-        {event.price !== null && event.price !== undefined
-          ? event.price === 0
-            ? "Free"
-            : `$${event.price}`
-          : "Price Unavailable"}
+        {event.price === 0 ? "Free" : event.price ? `$${event.price}` : "Price Unavailable"}
       </h4>
 
       <p>{event.description || "No description available."}</p>
 
-      {/* ⭐ Favorite & Book Buttons */}
       <div className="event-actions">
         <button onClick={toggleFavorite}>
           {isFavorited ? "★ Unfavorite" : "☆ Favorite"}
@@ -167,31 +153,24 @@ const SingleEvent = ({ token }) => {
         </button>
       </div>
 
-      {/* Review Form */}
       <div>
         <h3>Leave a Review</h3>
-        <select
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
-        >
+        <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
           {[1, 2, 3, 4, 5].map((r) => (
-            <option key={r} value={r}>
-              {r} Star
-            </option>
+            <option key={r} value={r}>{r} Star</option>
           ))}
         </select>
         <textarea
+          placeholder="Write your review..."
           value={review}
           onChange={(e) => setReview(e.target.value)}
-          placeholder="Write your review here..."
         />
         <button onClick={submitReview}>Submit Review</button>
       </div>
 
-      {/* Reviews Section */}
       <h2>Reviews</h2>
-      {reviews && reviews.length > 0 ? (
-        <ul>
+      {reviews.length > 0 ? (
+        <ul className="review-list">
           {reviews.map((review) => (
             <li key={review.id}>
               <strong>{review.rating}⭐</strong>: {review.text_review}
@@ -202,11 +181,7 @@ const SingleEvent = ({ token }) => {
         <p>No reviews yet.</p>
       )}
 
-      {success && (
-        <p style={{ color: "green" }} aria-live="polite">
-          {success}
-        </p>
-      )}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <br />
       <Link to="/">

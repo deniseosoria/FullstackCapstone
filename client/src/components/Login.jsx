@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchLogin } from "../api";
+import "../Login.css";
 
 const Login = ({ setToken }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // React Router navigation hook
+  const navigate = useNavigate();
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
 
     try {
       const loginData = await fetchLogin(formData);
@@ -19,9 +20,9 @@ const Login = ({ setToken }) => {
       }
 
       if (loginData.token) {
-        setToken(loginData.token); // Update App.js state
-        localStorage.setItem("token", loginData.token); // Persist login
-        navigate("/"); // Redirect to homepage
+        setToken(loginData.token);
+        localStorage.setItem("token", loginData.token);
+        navigate("/");
       } else {
         throw new Error("Account not found. Please register.");
       }

@@ -52,31 +52,20 @@ bookingsRouter.get("/", requireUser, async (req, res, next) => {
 // Cancel a booking
 bookingsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
-    const { id: user_id } = req.user; // Extract user_id from authenticated user
+    const { id: user_id } = req.user;
     const { event_id } = req.params;
 
-    if (!user_id || !event_id) {
-      return res.status(400).json({ error: "Missing user_id or event_id." });
-    }
+    const canceled = await cancelBooking(user_id, event_id); // You likely already have this function
 
-    const canceledBooking = await cancelBooking(user_id, event_id);
-
-    if (canceledBooking) {
-      res
-        .status(200)
-        .json({
-          message: "Booking canceled successfully.",
-          booking: canceledBooking,
-        });
+    if (canceled) {
+      res.send({ message: "Booking canceled", booking: canceled });
     } else {
-      res.status(404).json({
-        name: "BookingNotFoundError",
-        message: "No booking found for this event or user.",
-      });
+      res.status(404).send({ error: "Booking not found" });
     }
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 });
+
 
 module.exports = bookingsRouter;

@@ -38,12 +38,14 @@ favoritesRouter.post("/:event_id", requireUser, async (req, res, next) => {
 favoritesRouter.get("/", requireUser, async (req, res, next) => {
   try {
     const { id: user_id } = req.user;
-    res.send(await getUserFavorites(user_id));
+    const favoriteEvents = await getUserFavorites(user_id);
+    res.send(favoriteEvents); 
   } catch (error) {
-    console.error("Error fetching favorites:", error);
     next(error);
   }
 });
+
+
 
 // Cancel a favorite event
 favoritesRouter.delete("/:event_id", requireUser, async (req, res, next) => {

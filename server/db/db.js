@@ -271,18 +271,24 @@ const bookEvent = async (user_id, event_id) => {
 };
 
 // Get user's booked events
-const getUserBookings = async (userId) => {
+async function getUserBookings(user_id) {
   try {
     const result = await client.query(
-      "SELECT events.* FROM bookings JOIN events ON bookings.event_id = events.id WHERE bookings.user_id = $1",
-      [userId]
+      `
+      SELECT events.*
+      FROM bookings
+      JOIN events ON bookings.event_id = events.id
+      WHERE bookings.user_id = $1
+      `,
+      [user_id]
     );
     return result.rows;
   } catch (error) {
-    console.error(" Error in getUserBookings:", error);
+    console.error("Error in getUserBookings:", error);
     throw error;
   }
-};
+}
+
 
 // Cancel a booking
 const cancelBooking = async (userId, eventId) => {
@@ -383,19 +389,25 @@ const addFavorite = async ({ user_id, event_id }) => {
   }
 };
 
-// Get user's favorite events
-const getUserFavorites = async (userId) => {
+async function getUserFavorites(user_id) {
   try {
     const result = await client.query(
-      "SELECT events.* FROM favorites JOIN events ON favorites.event_id = events.id WHERE favorites.user_id = $1",
-      [userId]
+      `
+      SELECT events.*
+      FROM favorites
+      JOIN events ON favorites.event_id = events.id
+      WHERE favorites.user_id = $1
+      `,
+      [user_id]
     );
     return result.rows;
   } catch (error) {
-    console.error(" Error in getUserFavorites:", error);
+    console.error("Error in getUserFavorites:", error);
     throw error;
   }
-};
+}
+
+
 
 // Remove an event from favorites
 const removeFavorite = async (userId, eventId) => {

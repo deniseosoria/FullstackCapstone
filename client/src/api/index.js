@@ -348,7 +348,7 @@ export async function fetchEventReviews(eventId) {
       throw new Error(result.message || "Failed to fetch reviews.");
     }
 
-    return result; // Expected array of reviews
+    return result; 
   } catch (err) {
     return { error: err.message };
   }
@@ -360,7 +360,7 @@ export async function fetchCreateReview(eventId, rating, textReview, token) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Authentication token
+        Authorization: `Bearer ${token}`, 
       },
       body: JSON.stringify({ rating, text_review: textReview }),
     });
@@ -537,25 +537,23 @@ export async function fetchFavorite(eventId, token) {
     return { error: err.message };
   }
 }
-
 export async function fetchUserFavorites(token) {
   try {
-    const response = await fetch(`${API_URL}/favorites/`, {
+    const response = await fetch(`/api/favorites/`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`, // Authentication token
+        Authorization: `Bearer ${token}`,
       },
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-      throw new Error(result.message || "Failed to fetch user favorites.");
+      throw new Error("Failed to fetch favorites");
     }
 
-    return result; // Expected array of favorite events
+    return await response.json();
   } catch (err) {
-    return { error: err.message };
+    console.error("Error fetching favorites:", err);
+    return [];
   }
 }
 

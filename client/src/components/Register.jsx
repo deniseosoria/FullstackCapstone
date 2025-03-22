@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { fetchRegister } from "../api";
+import "../Login.css";
 
 const Register = ({ setToken }) => {
   const [formData, setFormData] = useState({
