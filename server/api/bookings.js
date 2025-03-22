@@ -38,15 +38,16 @@ bookingsRouter.post("/", requireUser, async (req, res, next) => {
 });
 
 // Get a user's bookings
-bookingsRouter.get("/:id", requireUser, async (req, res, next) => {
+bookingsRouter.get("/", requireUser, async (req, res, next) => {
   try {
     const { id: user_id } = req.user;
-    res.send(await getUserBookings(user_id));
+    const bookings = await getUserBookings(user_id);
+    res.send(bookings);
   } catch (error) {
-    console.error("Error fetching bookings:", error);
     next(error);
   }
 });
+
 
 // Cancel a booking
 bookingsRouter.delete("/:event_id", requireUser, async (req, res, next) => {

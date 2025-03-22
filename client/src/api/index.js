@@ -205,52 +205,60 @@ export async function fetchEvents() {
   }
 }
 
-export async function fetchUserEvents() {
+export async function fetchEventById(eventId) {
   try {
-    const response = await fetch(`/api/events/${userId}`, {
+    const response = await fetch(`${API_URL}/events/${eventId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
     });
 
+    const result = await response.json();
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      if (result.error.includes("Event not found")) {
+        throw new Error("Event not found.");
+      }
+      throw new Error(result.message || "Failed to fetch event.");
     }
 
-    const events = await response.json();
-    console.log("User Events:", events);
+    return result; // Expected event object
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function fetchUserEvents(userId) {
+  try {
+    const response = await fetch(`/api/events/user/${userId}`, {
+      method: "GET",
+    });
+
+    const text = await response.text();
+    const events = text ? JSON.parse(text) : [];
+    console.log(" User Events:", events);
     return events;
   } catch (error) {
-    console.error("Failed to fetch user events:", error);
+    console.error(" Failed to fetch user events:", error);
     return [];
   }
 }
 
+
+
 export async function fetchCreateEvent(formData, token) {
   try {
-    const formDataToSend = new FormData();
-    formDataToSend.append("event_name", formData.name);
-    formDataToSend.append("description", formData.description);
-    formDataToSend.append("event_type", formData.category);
-    formDataToSend.append("address", formData.address);
-    formDataToSend.append("price", formData.price); // Fixed
-    formDataToSend.append("capacity", formData.capacity);
-    formDataToSend.append("date", formData.date);
-    formDataToSend.append("start_time", formData.start_time);
-    formDataToSend.append("end_time", formData.end_time);
+    const body = new FormData();
 
-    if (formData.picture) {
-      formDataToSend.append("picture", formData.picture); // Append image file
+    // Append all form fields
+    for (let key in formData) {
+      body.append(key, formData[key]);
     }
 
     const response = await fetch(`${API_URL}/events/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Ensure token is passed correctly
+        Authorization: `Bearer ${token}`, // ✅ Don't include Content-Type for FormData
       },
-      body: formDataToSend, // FormData auto-sets correct headers
+      body,
     });
 
     const result = await response.json();
@@ -268,33 +276,21 @@ export async function fetchCreateEvent(formData, token) {
   }
 }
 
+
 export async function fetchUpdateEvent(eventId, formData, token) {
   try {
     const formDataToSend = new FormData();
 
-    if (formData.name) formDataToSend.append("event_name", formData.name);
-    if (formData.description)
-      formDataToSend.append("description", formData.description);
-    if (formData.category)
-      formDataToSend.append("event_type", formData.category);
-    if (formData.address) formDataToSend.append("address", formData.address);
-    if (formData.price) formDataToSend.append("price", formData.price);
-    if (formData.capacity) formDataToSend.append("capacity", formData.capacity);
-    if (formData.date) formDataToSend.append("date", formData.date);
-    if (formData.start_time)
-      formDataToSend.append("start_time", formData.start_time);
-    if (formData.end_time) formDataToSend.append("end_time", formData.end_time);
-
-    if (formData.picture) {
-      formDataToSend.append("picture", formData.picture); // Append image file if updated
+    for (let key in formData) {
+      formDataToSend.append(key, formData[key]);
     }
 
     const response = await fetch(`${API_URL}/events/${eventId}`, {
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${token}`, // Authentication token
+        Authorization: `Bearer ${token}`,
       },
-      body: formDataToSend, // FormData auto-sets correct headers
+      body: formDataToSend,
     });
 
     const result = await response.json();
@@ -306,37 +302,35 @@ export async function fetchUpdateEvent(eventId, formData, token) {
       throw new Error(result.message || "Event update failed.");
     }
 
-    return result; // Expected { event: updatedEvent }
+    return result;
   } catch (err) {
     return { error: err.message };
   }
 }
 
+
 export async function fetchDeleteEvent(eventId, token) {
   try {
-    const response = await fetch(`${API_URL}/events/${eventId}`, {
+    const response = await fetch(`/api/events/${eventId}`, {
       method: "DELETE",
       headers: {
-        Authorization: `Bearer ${token}`, // Authentication token
+        Authorization: `Bearer ${token}`,
       },
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      if (result.name === "EventNotFoundError") {
-        throw new Error(
-          "Event not found or you don't have permission to delete it."
-        );
-      }
-      throw new Error(result.message || "Event deletion failed.");
+      throw new Error(result.message || "Failed to delete event.");
     }
 
-    return result; // Expected { event: deletedEvent, message: "Event successfully deleted." }
+    return result;
   } catch (err) {
+    console.error("Error in fetchDeleteEvent:", err);
     return { error: err.message };
   }
 }
+
 
 // ================================
 // Reviews fetch
@@ -344,7 +338,7 @@ export async function fetchDeleteEvent(eventId, token) {
 
 export async function fetchEventReviews(eventId) {
   try {
-    const response = await fetch(`${API_URL}/reviews/${eventId}`, {
+    const response = await fetch(`${API_URL}/reviews/event/${eventId}`, {
       method: "GET",
     });
 
@@ -360,9 +354,9 @@ export async function fetchEventReviews(eventId) {
   }
 }
 
-export async function fetchAddReview(eventId, rating, textReview, token) {
+export async function fetchCreateReview(eventId, rating, textReview, token) {
   try {
-    const response = await fetch(`${API_URL}/reviews/${eventId}`, {
+    const response = await fetch(`${API_URL}/reviews/event/${eventId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -390,7 +384,7 @@ export async function fetchAddReview(eventId, rating, textReview, token) {
 
 export async function fetchEditReview(eventId, updatedData, token) {
   try {
-    const response = await fetch(`${API_URL}/reviews/${eventId}`, {
+    const response = await fetch(`${API_URL}/reviews/event/${eventId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -445,7 +439,7 @@ export async function fetchDeleteReview(reviewId, token) {
 // Bookings fetch
 // ================================
 
-export async function fetchCreateBooking(eventId, token) {
+export async function fetchBook(eventId, token) {
   try {
     const response = await fetch(`${API_URL}/bookings/`, {
       method: "POST",
@@ -520,7 +514,7 @@ export async function fetchCancelBooking(eventId, token) {
 // Favorites fetch
 // ================================
 
-export async function fetchAddFavorite(eventId, token) {
+export async function fetchFavorite(eventId, token) {
   try {
     const response = await fetch(`${API_URL}/favorites/${eventId}`, {
       method: "POST",
@@ -565,7 +559,7 @@ export async function fetchUserFavorites(token) {
   }
 }
 
-export async function fetchRemoveFavorite(eventId, token) {
+export async function fetchUnfavorite(eventId, token) {
   try {
     const response = await fetch(`${API_URL}/favorites/${eventId}`, {
       method: "DELETE",

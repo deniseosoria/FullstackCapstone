@@ -137,25 +137,36 @@ eventsRouter.patch(
   }
 );
 
-eventsRouter.get("/:user_id", requireUser, async (req, res, next) => {
+eventsRouter.get("/:event_id", async (req, res, next) => {
   try{
-    const { id: user_id } = req.user;
+    const { event_id } = req.params;
 
-    const events = await getUserEvents(user_id);
-    res.send(events);
+    const event = await getEventById(event_id);
+    res.send(event);
   } catch ({ name, message }) {
     next({ name, message });
   }
 })
+
+eventsRouter.get("/user/:user_id", async (req, res, next) => {
+  try {
+    const { user_id } = req.params;
+    console.log(" Fetching events for user_id:", user_id);
+    const events = await getUserEvents(user_id);
+    console.log(" Events found:", events);
+    res.send(events || []);
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
+});
+
+
 
 // 🔹 Delete Event
 eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
     const { event_id } = req.params;
     const { id: user_id } = req.user;
-
-    console.log("Deleting Event ID:", event_id); // Debugging
-    console.log("User ID:", user_id);
 
     const deletedEvent = await deleteEvent(event_id, user_id);
 
@@ -167,9 +178,10 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
         message: "Event not found or you don't have permission to delete it.",
       });
     }
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (error) {
+    next(error);
   }
 });
+
 
 module.exports = eventsRouter;

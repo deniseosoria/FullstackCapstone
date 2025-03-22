@@ -5,7 +5,7 @@ const { addReview, getEventReviews, editReview, deleteReview } =
   require("../db/db");
 
 // GET reviews for an event (No authentication required)
-reviewsRouter.get("/:event_id", async (req, res, next) => {
+reviewsRouter.get("/event/:event_id", async (req, res, next) => {
   try {
     const reviews = await getEventReviews(req.params.event_id);
     res.status(200).send(reviews);
@@ -14,7 +14,7 @@ reviewsRouter.get("/:event_id", async (req, res, next) => {
   }
 });
 
-reviewsRouter.post("/:event_id", requireUser, async (req, res, next) => {
+reviewsRouter.post("/event/:event_id", requireUser, async (req, res, next) => {
   console.log("Received POST request at /reviews/:event_id");
   console.log("Params:", req.params);
   console.log("Body:", req.body);
@@ -48,7 +48,7 @@ reviewsRouter.post("/:event_id", requireUser, async (req, res, next) => {
 });
 
 // PATCH (edit) a review (Requires authentication)
-reviewsRouter.patch("/:event_id", requireUser, async (req, res, next) => {
+reviewsRouter.patch("/event/:event_id", requireUser, async (req, res, next) => {
   const { event_id } = req.params;
   const { rating, text_review } = req.body;
   const user_id = req.user.id;

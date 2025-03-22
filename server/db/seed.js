@@ -60,7 +60,7 @@ const {
     
           CREATE TABLE events (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
             event_name VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
             event_type VARCHAR(50),
@@ -76,16 +76,16 @@ const {
     
           CREATE TABLE bookings (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-            event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+            "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
+            "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
             created_at TIMESTAMP DEFAULT NOW(),
             CONSTRAINT unique_booking UNIQUE(user_id, event_id)
           );
     
           CREATE TABLE reviews (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-            event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+            "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
+            "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
             rating INT CHECK (rating BETWEEN 1 AND 5),
             text_review TEXT,
             created_at TIMESTAMP DEFAULT NOW(),
@@ -94,8 +94,8 @@ const {
     
           CREATE TABLE favorites (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-            event_id UUID REFERENCES events(id) ON DELETE CASCADE,
+            "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
+            "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
             created_at TIMESTAMP DEFAULT NOW(),
             CONSTRAINT unique_favorite UNIQUE(user_id, event_id)
           );

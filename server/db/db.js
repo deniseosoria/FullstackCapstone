@@ -1,7 +1,7 @@
 // ==============================
 // IMPORTS & INITIAL SETUP
 // ==============================
-// require("dotenv").config({ path: "./.env" });
+
 const pg = require("pg");
 const bcrypt = require("bcrypt");
 
@@ -11,14 +11,6 @@ const SALT_ROUNDS = 10;
 // ==============================
 // DATABASE CONNECTION (PostgreSQL)
 // ==============================
-
-// // Get the database connection URL from environment variables
-// const DATABASE_URL = process.env.DATABASE_URL;
-
-// // Create a new PostgreSQL client using the connection string
-// const client = new pg.Client({
-//   connectionString: DATABASE_URL,
-// });
 
 const client = new pg.Client(
   process.env.DATABASE_URL
@@ -233,15 +225,17 @@ const getEventById = async (id) => {
   }
 };
 
-const getUserEvents = async (userId) => {
+async function getUserEvents(user_id) {
   try {
-    const result = await client.query("SELECT * FROM events WHERE user_id = $1", [userId]);
-    return result.rows.length ? result.rows : []; // Always return an array
+    const result = await client.query(`
+      SELECT * FROM events WHERE user_id = $1
+    `, [user_id]);
+    return result.rows;
   } catch (error) {
-    console.error("Error in getEventByUserId:", error);
+    console.error("Error in getUserEvents:", error);
     throw error;
   }
-};
+}
 
 
 const deleteEvent = async (id, user_id) => {
