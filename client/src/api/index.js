@@ -247,7 +247,7 @@ export async function fetchCreateEvent(formData, token) {
     const response = await fetch(`${API_URL}/events/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // ✅ Don't include Content-Type for FormData
+        Authorization: `Bearer ${token}`, 
       },
       body,
     });
