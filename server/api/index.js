@@ -8,7 +8,7 @@ const { getUserById } = require("../db/db"); // Import function to fetch user by
 require("dotenv").config();
 
 // Use JWT_SECRET from environment variables, defaulting to "shhh" if not provided
-const JWT_SECRET = process.env.JWT_SECRET || "shhh";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // ================================
 // Middleware: Authenticate User
@@ -36,7 +36,7 @@ apiRouter.use(async (req, res, next) => {
 
   try {
     // Verify and decode the JWT using the secret key
-    const { id } = jwt.verify(token, JWT_SECRET || "shhh");
+    const { id } = jwt.verify(token, JWT_SECRET);
 
     if (id) {
       // Fetch user details from the database using the user ID from the token

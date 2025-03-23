@@ -27,7 +27,7 @@ async function requireUser(req, res, next) {
 
   try {
     // Step 3: Verify the JWT token using the secret key
-    const payload = jwt.verify(token, process.env.JWT_SECRET || "shhh");
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     // Step 4: Fetch user details from the database using the token's payload (user ID)
     const user = await getUserById(payload.id);
