@@ -56,9 +56,7 @@ usersRouter.post("/login", async (req, res, next) => {
   }
 
   try {
-    console.log("Login request received for:", username); // Debugging
     const user = await getUserByUsername(username);
-    console.log("User found:", user); // Debugging
 
     if (!user) {
       return next({
@@ -69,7 +67,6 @@ usersRouter.post("/login", async (req, res, next) => {
 
     // Compare hashed password using bcrypt
     const passwordMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match:", passwordMatch); // Debugging
 
     if (!passwordMatch) {
       return next({
@@ -85,7 +82,6 @@ usersRouter.post("/login", async (req, res, next) => {
     );
     res.send({ message: "You're logged in!", token });
   } catch (error) {
-    console.error("Login Error:", error);
     next(error);
   }
 });
@@ -171,8 +167,6 @@ usersRouter.delete("/:user_id", requireUser, async (req, res, next) => {
   try {
     const { user_id } = req.params;
 
-    console.log("Deleting user with ID:", user_id); // Debugging step
-
     // Ensure the user can only delete their own account
     if (req.user.id !== user_id) {
       return res
@@ -192,7 +186,6 @@ usersRouter.delete("/:user_id", requireUser, async (req, res, next) => {
 
     res.send({ message: "User deleted successfully", user: deletedUser });
   } catch (error) {
-    console.error("Error in DELETE /users/:user_id:", error); // Debugging step
     next(error);
   }
 });
@@ -216,7 +209,6 @@ usersRouter.get("/account", requireUser, async (req, res) => {
       createdAt: user.created_at, // Adjust based on your DB structure
     });
   } catch (error) {
-    console.error("Error fetching account:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

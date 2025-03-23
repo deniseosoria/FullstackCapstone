@@ -56,17 +56,6 @@ apiRouter.use(async (req, res, next) => {
 });
 
 // ================================
-// Debugging Middleware
-// ================================
-// Logs the user information if they are authenticated
-apiRouter.use((req, res, next) => {
-  if (req.user) {
-    console.log("User is set:", req.user);
-  }
-  next(); // Move to the next middleware or route
-});
-
-// ================================
 // Mount Other Routers
 // ================================
 
@@ -103,7 +92,6 @@ apiRouter.use((error, req, res, next) => {
 });
 
 apiRouter.use((req, res, next) => {
-  console.log("\n✅ Debugging API Routes:");
   apiRouter.stack.forEach((middleware) => {
     if (middleware.route) {
       console.log(

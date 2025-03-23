@@ -22,10 +22,9 @@ const Account = ({ token }) => {
   const [favoriteEvents, setFavoriteEvents] = useState([]);
   const [newUserEvent, setNewUserEvent] = useState(null);
   const [updateEvent, setUpdateEvent] = useState(null);
-  const [deleteEvent, setDeleteEvent] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [activeTab, setActiveTab] = useState("accountInfo");
+  const [activeTab, setActiveTab] = useState("manageEvents");
   const [editingEvent, setEditingEvent] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,7 +152,7 @@ const Account = ({ token }) => {
       day: "numeric"
     });
 
-    const [hours, minutes] = timeString.split(":").map(Number);
+    const [hours, minutes] = timeString?.split(":")?.map(Number) || [];
     if (isNaN(hours) || isNaN(minutes)) return formattedDate;
 
     const hours12 = hours % 12 || 12;
@@ -192,7 +191,7 @@ const Account = ({ token }) => {
                 <label>Name:
                   <input
                     type="text"
-                    value={formData.name}
+                    value={formData.name || ""}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
@@ -200,7 +199,7 @@ const Account = ({ token }) => {
                 <label>Username:
                   <input
                     type="text"
-                    value={formData.username}
+                    value={formData.username || ""}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     required
                   />
@@ -231,10 +230,10 @@ const Account = ({ token }) => {
                 <li key={event.id}>
                   <h4>{event.event_name}</h4>
                   <img
-                src={event.picture?.trim() || "https://placehold.co/150x220/zzz/000?text=NoImage"}
-                onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
-                alt={event.event_name || "Event Image"}
-              />
+                    src={event.picture?.trim() ? `http://localhost:3001/uploads/${event.picture}` : "https://placehold.co/150x220/zzz/000?text=NoImage"}
+                    onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
+                    alt={event.event_name || "Event Image"}
+                  />
                   <div>
                     <button onClick={() => window.location.href = `/event/${event.id}`}>View</button>
                     <button onClick={() => setEditingEvent(event)}>Edit</button>
@@ -276,10 +275,10 @@ const Account = ({ token }) => {
                   <Link to={`/event/${event.id}`}>
                     <h4>{event.event_name}</h4>
                     <img
-                src={event.picture?.trim() || "https://placehold.co/150x220/zzz/000?text=NoImage"}
-                onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
-                alt={event.event_name || "Event Image"}
-              />
+                      src={event.picture?.trim() ? `http://localhost:3001/uploads/${event.picture}` : "https://placehold.co/150x220/zzz/000?text=NoImage"}
+                      onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
+                      alt={event.event_name || "Event Image"}
+                    />
                     <p>{formatEventDate(event.date, event.start_time)}</p>
                   </Link>
                   <button onClick={() => handleRemoveFavorite(event.id)}>Remove Favorite</button>
@@ -294,3 +293,4 @@ const Account = ({ token }) => {
 };
 
 export default Account;
+

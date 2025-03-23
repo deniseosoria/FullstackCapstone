@@ -7,7 +7,6 @@ export const API_URL = `http://localhost:3001/api`;
 
 export async function fetchLogin(formData) {
   try {
-    console.log("Sending login request:", formData); // Debugging
     const response = await fetch(`${API_URL}/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -34,7 +33,6 @@ export async function fetchLogin(formData) {
 
 export async function fetchRegister(formData) {
   try {
-    console.log("Sending register request:", formData); // Debugging
     const response = await fetch(`${API_URL}/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,10 +85,8 @@ export async function fetchUserAccount() {
     }
 
     const userData = await response.json();
-    console.log("User Account:", userData);
     return userData; // Return user data if needed elsewhere
   } catch (error) {
-    console.error("Error fetching account:", error.message);
     return null; // Return null if there's an error
   }
 }
@@ -192,15 +188,12 @@ export async function fetchEvents() {
     }
 
     const result = await response.json();
-    console.log("API Response:", result); // Log to confirm format
 
     if (!Array.isArray(result)) {
       throw new Error("Invalid data format received.");
     }
-    console.log(result);
     return result; // Directly return the array
   } catch (err) {
-    console.error("Error fetching events:", err.message);
     return []; // Return an empty array on error
   }
 }
@@ -234,10 +227,8 @@ export async function fetchUserEvents(userId) {
 
     const text = await response.text();
     const events = text ? JSON.parse(text) : [];
-    console.log(" User Events:", events);
     return events;
   } catch (error) {
-    console.error(" Failed to fetch user events:", error);
     return [];
   }
 }
@@ -278,35 +269,31 @@ export async function fetchCreateEvent(formData, token) {
 
 
 export async function fetchUpdateEvent(eventId, formData, token) {
-  try {
-    const formDataToSend = new FormData();
+  const body = new FormData();
 
-    for (let key in formData) {
-      formDataToSend.append(key, formData[key]);
+  for (const key in formData) {
+    if (formData[key] !== undefined && formData[key] !== null) {
+      body.append(key, formData[key]);
     }
-
-    const response = await fetch(`${API_URL}/events/${eventId}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formDataToSend,
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      if (result.name === "UnauthorizedUserError") {
-        throw new Error("You cannot update an event that is not yours.");
-      }
-      throw new Error(result.message || "Event update failed.");
-    }
-
-    return result;
-  } catch (err) {
-    return { error: err.message };
   }
+
+  const response = await fetch(`http://localhost:3001/api/events/${eventId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to update event");
+  }
+
+  const data = await response.json();
+  return data.event;
 }
+
 
 
 export async function fetchDeleteEvent(eventId, token) {
@@ -326,7 +313,6 @@ export async function fetchDeleteEvent(eventId, token) {
 
     return result;
   } catch (err) {
-    console.error("Error in fetchDeleteEvent:", err);
     return { error: err.message };
   }
 }
@@ -552,7 +538,6 @@ export async function fetchUserFavorites(token) {
 
     return await response.json();
   } catch (err) {
-    console.error("Error fetching favorites:", err);
     return [];
   }
 }

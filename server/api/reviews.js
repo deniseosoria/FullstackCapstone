@@ -15,10 +15,6 @@ reviewsRouter.get("/event/:event_id", async (req, res, next) => {
 });
 
 reviewsRouter.post("/event/:event_id", requireUser, async (req, res, next) => {
-  console.log("Received POST request at /reviews/:event_id");
-  console.log("Params:", req.params);
-  console.log("Body:", req.body);
-
   const { event_id } = req.params;
   const { rating, text_review } = req.body;
 
@@ -31,7 +27,6 @@ reviewsRouter.post("/event/:event_id", requireUser, async (req, res, next) => {
 
   try {
     const review = await addReview(req.user.id, event_id, rating, text_review);
-    console.log("New Review:", review);
 
     if (review) {
       res.status(201).send(review);
@@ -42,7 +37,6 @@ reviewsRouter.post("/event/:event_id", requireUser, async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error creating review:", error);
     next(error);
   }
 });

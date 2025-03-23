@@ -19,15 +19,6 @@ server.use(morgan("dev")); // Log requests
 //  Body Logger Middleware
 server.use(express.json()); // Make sure JSON body parsing is enabled
 
-server.use((req, res, next) => {
-  if (req.method !== "GET") {  // Skip logging for GET requests
-      console.log("<____Body Logger START____>");
-      console.log(req.body && Object.keys(req.body).length > 0 ? req.body : "No body data received");
-      console.log("<_____Body Logger END_____>");
-  }
-  next();
-});
-
 
 //  Serve uploaded images statically
 server.use("/uploads", express.static("uploads"));

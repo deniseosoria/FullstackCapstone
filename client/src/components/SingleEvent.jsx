@@ -50,6 +50,8 @@ const SingleEvent = ({ token }) => {
   }, [id, token]);
 
   const formatEventDate = (dateString, timeString) => {
+    if (!dateString || !timeString) return "Date/time unavailable";
+  
     const eventDate = new Date(dateString);
     const [hours, minutes] = timeString.split(":").map(Number);
     const hours12 = hours % 12 || 12;
@@ -62,6 +64,7 @@ const SingleEvent = ({ token }) => {
     });
     return `${formattedDate} ${formattedTime}`;
   };
+  
 
   const toggleFavorite = async () => {
     try {
@@ -91,16 +94,19 @@ const SingleEvent = ({ token }) => {
 
   const submitReview = async () => {
     try {
-      await fetchCreateReview(event.id, { rating, text_review: review }, token);
+      const res = await fetchCreateReview(event.id, rating, review, token);
+
       const updatedReviews = await fetchEventReviews(id);
+
       setReviews(updatedReviews);
       setReview("");
       setSuccess("Review submitted!");
     } catch (err) {
+ 
       setError("Failed to submit review.");
     }
   };
-
+  
   if (isLoading) return <h2>Loading event details...</h2>;
 
   if (error) {

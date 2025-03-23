@@ -29,7 +29,6 @@ favoritesRouter.post("/:event_id", requireUser, async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error in POST /favorites/:event_id:", error);
     next(error);
   }
 });

@@ -23,20 +23,11 @@ const client = new pg.Client(
 
 async function createUser({ name, username, password, location, picture }) {
   try {
-    console.log("Inside createUser - received:", {
-      name,
-      username,
-      password,
-      location,
-      picture,
-    });
-
     if (!password) {
       throw new Error("Password is missing in createUser");
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    console.log("Hashed password:", hashedPassword);
 
     const {
       rows: [user],
@@ -47,10 +38,8 @@ async function createUser({ name, username, password, location, picture }) {
       [name, username, hashedPassword, location, picture]
     );
 
-    console.log("User created:", user);
     return user;
   } catch (error) {
-    console.error(" Error in createUser:", error);
     throw error;
   }
 }
@@ -74,7 +63,6 @@ async function updateUser(id, fields = {}) {
 
     return user;
   } catch (error) {
-    console.error(" Error in updateUser:", error);
     throw error;
   }
 }
@@ -86,7 +74,6 @@ async function getAllUsers() {
     );
     return rows;
   } catch (error) {
-    console.error(" Error in getAllUsers:", error);
     throw error;
   }
 }
@@ -99,7 +86,6 @@ const getUserByUsername = async (username) => {
     );
     return result.rows[0];
   } catch (error) {
-    console.error(" Error in getUserByUsername:", error);
     throw error;
   }
 };
@@ -111,7 +97,6 @@ const getUserById = async (id) => {
     ]);
     return rows[0];
   } catch (error) {
-    console.error(" Error in getUserById:", error);
     throw error;
   }
 };
@@ -171,7 +156,6 @@ async function createEvent({
 
     return event;
   } catch (error) {
-    console.error(" Error in createEvent:", error);
     throw error;
   }
 }
@@ -195,7 +179,6 @@ async function updateEvent(event_id, fields = {}) {
 
     return event;
   } catch (error) {
-    console.error(" Error in updateEvent:", error);
     throw error;
   }
 }
@@ -208,7 +191,6 @@ const getAllEvents = async (limit = 10, offset = 0) => {
     );
     return result.rows;
   } catch (error) {
-    console.error(" Error in getAllEvents:", error);
     throw error;
   }
 };
@@ -220,7 +202,6 @@ const getEventById = async (id) => {
     ]);
     return result.rows[0];
   } catch (error) {
-    console.error(" Error in getEventById:", error);
     throw error;
   }
 };
@@ -232,7 +213,6 @@ async function getUserEvents(user_id) {
     `, [user_id]);
     return result.rows;
   } catch (error) {
-    console.error("Error in getUserEvents:", error);
     throw error;
   }
 }
@@ -246,7 +226,6 @@ const deleteEvent = async (id, user_id) => {
     );
     return result.rows[0]; // Returns the deleted event
   } catch (error) {
-    console.error(" Error in deleteEvent:", error);
     throw error;
   }
 };
@@ -256,8 +235,6 @@ const deleteEvent = async (id, user_id) => {
  */
 const bookEvent = async (user_id, event_id) => {
   try {
-    console.log("Inserting into bookings:", { user_id, event_id }); // Debugging
-
     const { rows } = await client.query(
       "INSERT INTO bookings (user_id, event_id) VALUES ($1, $2) RETURNING *",
       [user_id, event_id]
@@ -265,7 +242,6 @@ const bookEvent = async (user_id, event_id) => {
 
     return rows[0];
   } catch (error) {
-    console.error("Error in bookEvent:", error);
     throw error;
   }
 };
@@ -284,7 +260,6 @@ async function getUserBookings(user_id) {
     );
     return result.rows;
   } catch (error) {
-    console.error("Error in getUserBookings:", error);
     throw error;
   }
 }
@@ -299,7 +274,6 @@ const cancelBooking = async (userId, eventId) => {
     );
     return result.rows[0];
   } catch (error) {
-    console.error(" Error in cancelBooking:", error);
     throw error;
   }
 };
@@ -315,7 +289,6 @@ const addReview = async (userId, event_id, rating, text_review) => {
     );
     return rows[0];
   } catch (error) {
-    console.error(" Error in addReview:", error);
     throw error;
   }
 };
@@ -329,7 +302,6 @@ const getEventReviews = async (event_id) => {
     );
     return result.rows;
   } catch (error) {
-    console.error(" Error in getEventReviews:", error);
     throw error;
   }
 };
@@ -354,7 +326,6 @@ const editReview = async (userId, event_id, fields = {}) => {
 
     return review;
   } catch (error) {
-    console.error(" Error in editReview:", error);
     throw error;
   }
 };
@@ -368,7 +339,6 @@ const deleteReview = async (reviewId, userId) => {
     );
     return result.rows[0];
   } catch (error) {
-    console.error(" Error in deleteReview:", error);
     throw error;
   }
 };
@@ -384,7 +354,6 @@ const addFavorite = async ({ user_id, event_id }) => {
     );
     return rows[0];
   } catch (error) {
-    console.error("Database error in addFavorite:", error);
     throw error;
   }
 };
@@ -402,7 +371,6 @@ async function getUserFavorites(user_id) {
     );
     return result.rows;
   } catch (error) {
-    console.error("Error in getUserFavorites:", error);
     throw error;
   }
 }
@@ -418,7 +386,6 @@ const removeFavorite = async (userId, eventId) => {
     );
     return result.rows[0];
   } catch (error) {
-    console.error(" Error in removeFavorite:", error);
     throw error;
   }
 };

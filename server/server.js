@@ -1,35 +1,56 @@
-/** Middleware and Listening Functionality */
-
-// Functon imports:
+/// Required Imports
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const path = require("path");
 const { client } = require("./db/db.js");
 
-// Express imports:
-const express = require("express");
+// Initialize App
 const app = express();
 
-// JSON parser:
+// Middleware
 app.use(express.json());
+app.use(morgan("dev"));
 
-// Middleware for printing information + errors:
-app.use(require("morgan")("dev"));
-
-// Middleware for linking frontend to backend:
-const cors = require("cors");
-
+//  CORS Setup for Frontend Access
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
-    method: "GET, POST, PUT, PATCH, DELETE",
-    allowedHeaders: "Content-Type, Authorization",
+    origin: ["http://localhost:5173"], // Frontend origin
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   })
 );
-// BTW: double-quote strings aren't accepted as JSONs, so on line 20, you have to use single quotes
 
+const multer = require("multer");
+
+// Set storage engine
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "./uploads"));
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = `${Date.now()}-${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
+
+module.exports.upload = upload; // Export to use in your event routes
+
+
+//  Serve Static Files (for uploaded images)
+app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+
+
+//  Mount API Routes
 const api = require("./api/index.js");
 app.use("/api", api);
 
-//For deployment only:
-const path = require("path");
+//  Serve Client for Production Builds (if using Vite/React)
 app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "../client/dist/index.html"))
 );
@@ -38,27 +59,26 @@ app.use(
   express.static(path.join(__dirname, "../client/dist/assets"))
 );
 
-/**This little function produces a lovely print out of any error messages thrown by
- * any of the callback functions. It makes an object displayed in the console that
- * you can also grab and display on the client side:
- */
+//  Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.log(err);
-  res
-    .status(err.status || 500)
-    .send({ error: err.message ? err.message : err });
+  console.error(" Error:", err);
+  res.status(err.status || 500).send({
+    name: err.name || "ServerError",
+    message: err.message || "An unexpected error occurred.",
+  });
 });
 
-// Init function declaration:
+//  Init & Listen
 const init = async () => {
-  // Client connection and port creation:
   const port = process.env.PORT || 3001;
-  await client.connect();
-  console.log("connected to database");
-
-  //Setting listening functionality:
-  app.listen(port, () => console.log(`listening on port ${port}`));
+  try {
+    await client.connect();
+    app.listen(port, () => {
+      console.log(` Server listening on http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error(" Failed to start server:", err);
+  }
 };
 
-// Init function invocation:
 init();

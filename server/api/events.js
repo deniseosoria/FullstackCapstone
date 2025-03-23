@@ -2,140 +2,124 @@ const express = require("express");
 const eventsRouter = express.Router();
 const multer = require("multer");
 const path = require("path");
-
 const { requireUser } = require("./utils");
+const {
+  createEvent,
+  getAllEvents,
+  updateEvent,
+  getEventById,
+  getUserEvents,
+  deleteEvent,
+} = require("../db/db");
 
-const { createEvent, getAllEvents, updateEvent, getEventById, getUserEvents, deleteEvent } =
-  require("../db/db");
-
-//  Configure multer for file storage
+// Multer config for image upload
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files in the 'uploads' folder
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Rename file
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, unique);
   },
 });
 
-//  Middleware to handle image uploads
 const upload = multer({ storage });
 
-//  Serve uploaded images as static files
+// Serve uploaded images as static files
 eventsRouter.use("/uploads", express.static("uploads"));
 
-//  Get All Events
+// GET all events
 eventsRouter.get("/", async (req, res, next) => {
   try {
     const events = await getAllEvents();
     res.send(events);
-  } catch ({ name, message }) {
-    next({ name, message });
+  } catch (err) {
+    next(err);
   }
 });
 
-//  Create Event (with Image Upload)
-eventsRouter.post(
-  "/",
-  requireUser,
-  upload.single("picture"),
-  async (req, res, next) => {
-    try {
-      const {
-        event_name,
-        description,
-        event_type,
-        address,
-        price,
-        capacity,
-        date,
-        start_time,
-        end_time,
-      } = req.body;
+// CREATE event (with image upload)
+eventsRouter.post("/", requireUser, upload.single("picture"), async (req, res, next) => {
+  try {
+    const {
+      event_name,
+      description,
+      event_type,
+      address,
+      price,
+      capacity,
+      date,
+      start_time,
+      end_time,
+    } = req.body;
 
-      const eventData = {
-        user_id: req.user.id,
-        event_name,
-        description,
-        event_type,
-        address,
-        price,
-        capacity,
-        date,
-        start_time,
-        end_time,
-        picture: req.file ? `/uploads/${req.file.filename}` : null, //  Store file path
-      };
+    const picture = req.file ? req.file.filename : null;
 
-      const event = await createEvent(eventData);
+    const event = await createEvent({
+      event_name,
+      description,
+      event_type,
+      address,
+      price,
+      capacity,
+      date,
+      start_time,
+      end_time,
+      picture,
+      user_id: req.user.id,
+    });
 
-      if (event) {
-        res.send(event);
-      } else {
-        next({
-          name: "CreationError",
-          message: "There was an error creating your event. Please try again.",
-        });
-      }
-    } catch ({ name, message }) {
-      next({ name, message });
-    }
+    res.send({ event });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
-// Update Event (with Image Upload)
-eventsRouter.patch(
-  "/:event_id",
-  requireUser,
-  upload.single("picture"),
-  async (req, res, next) => {
-    try {
-      const { event_id } = req.params;
-      const {
-        event_name,
-        description,
-        event_type,
-        address,
-        price,
-        capacity,
-        date,
-        start_time,
-        end_time,
-      } = req.body;
+// UPDATE event (with image upload)
+eventsRouter.patch("/:id", upload.single("picture"), async (req, res, next) => {
+  try {
+    const eventId = req.params.id;
+    const existingEvent = await getEventById(eventId);
 
-      const updateFields = {};
-
-      if (event_name) updateFields.event_name = event_name;
-      if (description) updateFields.description = description;
-      if (event_type) updateFields.event_type = event_type;
-      if (address) updateFields.address = address;
-      if (price) updateFields.price = price;
-      if (capacity) updateFields.capacity = capacity;
-      if (date) updateFields.date = date;
-      if (start_time) updateFields.start_time = start_time;
-      if (end_time) updateFields.end_time = end_time;
-      if (req.file) updateFields.picture = `/uploads/${req.file.filename}`; //  Handle image update
-
-      const originalEvent = await getEventById(event_id);
-
-      if (!originalEvent) {
-        return res.status(404).json({ message: "Event not found" });
-      }
-
-      if (originalEvent.user_id === req.user.id) {
-        const updatedEvent = await updateEvent(event_id, updateFields);
-        res.send({ event: updatedEvent });
-      } else {
-        next({
-          name: "UnauthorizedUserError",
-          message: "You cannot update an event that is not yours",
-        });
-      }
-    } catch ({ name, message }) {
-      next({ name, message });
+    if (!existingEvent) {
+      return res.status(404).send({ error: "Event not found" });
     }
+
+    const {
+      event_name,
+      description,
+      event_type,
+      address,
+      price,
+      capacity,
+      date,
+      start_time,
+      end_time,
+    } = req.body;
+
+    const updateFields = {
+      ...(event_name && { event_name }),
+      ...(description && { description }),
+      ...(event_type && { event_type }),
+      ...(address && { address }),
+      ...(price && { price: Number(price) }),
+      ...(capacity && { capacity: Number(capacity) }),
+      ...(date && { date }),
+      ...(start_time && { start_time }),
+      ...(end_time && { end_time }),
+    };
+
+    if (req.file) {
+      updateFields.picture = req.file.filename;
+    }
+
+    const updated = await updateEvent(eventId, updateFields);
+    res.send({ event: updated });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 eventsRouter.get("/:event_id", async (req, res, next) => {
   try{
@@ -151,18 +135,14 @@ eventsRouter.get("/:event_id", async (req, res, next) => {
 eventsRouter.get("/user/:user_id", async (req, res, next) => {
   try {
     const { user_id } = req.params;
-    console.log(" Fetching events for user_id:", user_id);
     const events = await getUserEvents(user_id);
-    console.log(" Events found:", events);
     res.send(events || []);
   } catch ({ name, message }) {
     next({ name, message });
   }
 });
 
-
-
-// 🔹 Delete Event
+// DELETE an event
 eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
   try {
     const { event_id } = req.params;
@@ -182,6 +162,5 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
     next(error);
   }
 });
-
 
 module.exports = eventsRouter;

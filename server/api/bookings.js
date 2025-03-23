@@ -17,9 +17,6 @@ bookingsRouter.post("/", requireUser, async (req, res, next) => {
       return res.status(400).json({ error: "Missing user_id or event_id." });
     }
 
-    // Log to see the actual values being sent
-    console.log("Creating booking with:", { user_id, event_id });
-
     // Ensure both are treated as UUIDs when passed to bookEvent
     const booking = await bookEvent(user_id, event_id);
 
@@ -32,7 +29,6 @@ bookingsRouter.post("/", requireUser, async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.error("Error in /bookings route:", error);
     next(error);
   }
 });
