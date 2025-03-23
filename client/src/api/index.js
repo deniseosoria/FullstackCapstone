@@ -300,7 +300,6 @@ export async function fetchDeleteEvent(eventId, token) {
 
     return result;
   } catch (err) {
-    console.error("Delete failed:", err.message);
     return { error: err.message };
   }
 }

@@ -193,10 +193,6 @@ async function updateEvent(event_id, fields = {}) {
 
     return event;
   } catch (error) {
-    console.error(
-      " updateEvent SQL ERROR:",
-      error.stack || error.message || error
-    );
     throw error;
   }
 }

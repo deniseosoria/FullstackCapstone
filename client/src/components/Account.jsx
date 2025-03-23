@@ -76,7 +76,6 @@ const Account = ({ token }) => {
       setSuccess("Event created successfully.");
       setShowCreateForm(false);
     } catch (err) {
-      console.error("Error creating event:", err);
       setError("Failed to create event.");
     }
   }

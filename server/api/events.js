@@ -160,17 +160,9 @@ eventsRouter.patch(
         updateFields.picture = req.file.filename;
       }
 
-      console.log("Body Fields:", req.body);
-      console.log("Uploaded file:", req.file);
-      console.log("User ID:", req.user?.id);
-
-      console.log(" Calling updateEvent with:", updateFields);
-
-
       const updatedEvent = await updateEvent(eventId, updateFields);
       res.send({ event: updatedEvent });
     } catch (err) {
-      console.error("❌ PATCH /events/:id error:", err.stack || err.message || err);
       res.status(500).send({ error: "Internal Server Error", details: err.message });
     
     

@@ -72,11 +72,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
       if (formData[key] !== null && formData[key] !== undefined) {
         data.append(key, formData[key]);
       }
-    });
-
-    console.log("Submitting event with form data:");
-    console.log([...data.entries()]); // Logs all key-value pairs being submitted
-  
+    });  
 
     await onSubmit(data);
     setPreviewImage(null);
