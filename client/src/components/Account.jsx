@@ -69,15 +69,18 @@ const Account = ({ token }) => {
 
   async function handleCreateEvent(formData) {
     try {
-      const createEventData = await fetchCreateEvent(formData, token);
-      setNewUserEvent(createEventData);
+      const { event: createEventData } = await fetchCreateEvent(formData, token);
+  
       setUserEvents((prev) => [...prev, createEventData]);
+      setNewUserEvent(createEventData);
       setSuccess("Event created successfully.");
       setShowCreateForm(false);
     } catch (err) {
+      console.error("Error creating event:", err);
       setError("Failed to create event.");
     }
   }
+  
 
   const handleEventUpdate = async (eventId, formData) => {
     try {

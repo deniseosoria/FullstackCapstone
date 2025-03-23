@@ -213,7 +213,7 @@ export async function fetchEventById(eventId) {
       throw new Error(result.message || "Failed to fetch event.");
     }
 
-    return result; // Expected event object
+    return result; 
   } catch (err) {
     return { error: err.message };
   }
@@ -240,9 +240,9 @@ export async function fetchCreateEvent(formData, token) {
     const response = await fetch(`${API_URL}/events/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, 
       },
-      body: formData,
+      body: formData, 
     });
 
     const result = await response.json();

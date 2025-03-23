@@ -74,6 +74,10 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
       }
     });
 
+    console.log("Submitting event with form data:");
+    console.log([...data.entries()]); // Logs all key-value pairs being submitted
+  
+
     await onSubmit(data);
     setPreviewImage(null);
     setFormData((prev) => ({ ...prev, picture: null }));
@@ -189,7 +193,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
         />
       </label>
 
-      <label>
+      {/* <label>
         Upload Image:
         <input
           type="file"
@@ -211,7 +215,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
             className="event-image"
           />
         </div>
-      )}
+      )} */}
 
       <button type="submit" className="submit-button">
         Save Event
