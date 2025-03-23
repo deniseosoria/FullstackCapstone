@@ -237,19 +237,12 @@ export async function fetchUserEvents(userId) {
 
 export async function fetchCreateEvent(formData, token) {
   try {
-    const body = new FormData();
-
-    // Append all form fields
-    for (let key in formData) {
-      body.append(key, formData[key]);
-    }
-
     const response = await fetch(`${API_URL}/events/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
       },
-      body,
+      body: formData,
     });
 
     const result = await response.json();
@@ -268,37 +261,31 @@ export async function fetchCreateEvent(formData, token) {
 }
 
 
+
 export async function fetchUpdateEvent(eventId, formData, token) {
-  const body = new FormData();
-
-  for (const key in formData) {
-    if (formData[key] !== undefined && formData[key] !== null) {
-      body.append(key, formData[key]);
-    }
-  }
-
-  const response = await fetch(`http://localhost:3001/api/events/${eventId}`, {
+  const response = await fetch(`${API_URL}/events/${eventId}`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    body,
+    body: formData,
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || "Failed to update event");
+    throw new Error(data.error || "Failed to update event");
   }
 
-  const data = await response.json();
   return data.event;
 }
 
 
 
+
 export async function fetchDeleteEvent(eventId, token) {
   try {
-    const response = await fetch(`/api/events/${eventId}`, {
+    const response = await fetch(`${API_URL}/events/${eventId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -308,14 +295,16 @@ export async function fetchDeleteEvent(eventId, token) {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message || "Failed to delete event.");
+      throw new Error(result.message || "Failed to delete event");
     }
 
     return result;
   } catch (err) {
+    console.error("Delete failed:", err.message);
     return { error: err.message };
   }
 }
+
 
 
 // ================================

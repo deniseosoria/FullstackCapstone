@@ -10,7 +10,7 @@ import {
   fetchUserFavorites,
   fetchUserBookings,
   fetchCancelBooking,
-  fetchUnfavorite
+  fetchUnfavorite,
 } from "../api";
 import EventForm from "./EventForm";
 import "../Account.css";
@@ -79,29 +79,26 @@ const Account = ({ token }) => {
     }
   }
 
-  async function handleEventUpdate(eventId, formData) {
+  const handleEventUpdate = async (eventId, formData) => {
     try {
-      const updateEventData = await fetchUpdateEvent(eventId, formData, token);
-      setUpdateEvent(updateEventData);
+      const updated = await fetchUpdateEvent(eventId, formData, token);
+
       setUserEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === eventId ? updateEventData : event
-        )
+        prevEvents.map((event) => (event.id === eventId ? updated : event))
       );
+
+      setEditingEvent(null); // Hide form
       setSuccess("Event updated successfully.");
-      setEditingEvent(null);
     } catch (err) {
       setError("Failed to update event.");
     }
-  }
+  };
 
   async function handleRemoveEvent(eventId) {
     try {
       const deleted = await fetchDeleteEvent(eventId, token);
       if (deleted?.event) {
-        setUserEvents((prev) =>
-          prev.filter((event) => event.id !== eventId)
-        );
+        setUserEvents((prev) => prev.filter((event) => event.id !== eventId));
         setSuccess("Event deleted successfully.");
       } else {
         throw new Error("Delete failed.");
@@ -124,9 +121,7 @@ const Account = ({ token }) => {
   async function handleRemoveFavorite(eventId) {
     try {
       await fetchUnfavorite(eventId, token);
-      setFavoriteEvents((prev) =>
-        prev.filter((e) => e.id !== eventId)
-      );
+      setFavoriteEvents((prev) => prev.filter((e) => e.id !== eventId));
       setSuccess("Favorite removed.");
     } catch (err) {
       setError("Failed to remove favorite.");
@@ -149,7 +144,7 @@ const Account = ({ token }) => {
     const formattedDate = eventDate.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
-      day: "numeric"
+      day: "numeric",
     });
 
     const [hours, minutes] = timeString?.split(":")?.map(Number) || [];
@@ -157,7 +152,9 @@ const Account = ({ token }) => {
 
     const hours12 = hours % 12 || 12;
     const amPm = hours >= 12 ? "PM" : "AM";
-    return `${formattedDate} ${hours12}:${minutes.toString().padStart(2, "0")} ${amPm}`;
+    return `${formattedDate} ${hours12}:${minutes
+      .toString()
+      .padStart(2, "0")} ${amPm}`;
   };
 
   const filteredBookedEvents = bookedEvents.filter((event) =>
@@ -171,10 +168,30 @@ const Account = ({ token }) => {
     <div className="account-container">
       <div className="sidebar">
         <h3>Account</h3>
-        <button className={activeTab === "accountInfo" ? "active" : ""} onClick={() => setActiveTab("accountInfo")}>Account Info</button>
-        <button className={activeTab === "manageEvents" ? "active" : ""} onClick={() => setActiveTab("manageEvents")}>Manage Events</button>
-        <button className={activeTab === "bookedEvents" ? "active" : ""} onClick={() => setActiveTab("bookedEvents")}>Booked Events</button>
-        <button className={activeTab === "favoriteEvents" ? "active" : ""} onClick={() => setActiveTab("favoriteEvents")}>Favorite Events</button>
+        <button
+          className={activeTab === "accountInfo" ? "active" : ""}
+          onClick={() => setActiveTab("accountInfo")}
+        >
+          Account Info
+        </button>
+        <button
+          className={activeTab === "manageEvents" ? "active" : ""}
+          onClick={() => setActiveTab("manageEvents")}
+        >
+          Manage Events
+        </button>
+        <button
+          className={activeTab === "bookedEvents" ? "active" : ""}
+          onClick={() => setActiveTab("bookedEvents")}
+        >
+          Booked Events
+        </button>
+        <button
+          className={activeTab === "favoriteEvents" ? "active" : ""}
+          onClick={() => setActiveTab("favoriteEvents")}
+        >
+          Favorite Events
+        </button>
       </div>
 
       <div className="content">
@@ -184,33 +201,47 @@ const Account = ({ token }) => {
         {activeTab === "accountInfo" && (
           <div className="account-info">
             <h2>Welcome, {user.name}!</h2>
-            <p><strong>User ID:</strong> {user.id}</p>
+            <p>
+              <strong>User ID:</strong> {user.id}
+            </p>
 
             {editUserForm ? (
               <form onSubmit={handleUserUpdate}>
-                <label>Name:
+                <label>
+                  Name:
                   <input
                     type="text"
                     value={formData.name || ""}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     required
                   />
                 </label>
-                <label>Username:
+                <label>
+                  Username:
                   <input
                     type="text"
                     value={formData.username || ""}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, username: e.target.value })
+                    }
                     required
                   />
                 </label>
                 <button type="submit">Save</button>
-                <button type="button" onClick={() => setEditUserForm(false)}>Cancel</button>
+                <button type="button" onClick={() => setEditUserForm(false)}>
+                  Cancel
+                </button>
               </form>
             ) : (
               <>
-                <p><strong>Name:</strong> {user.name}</p>
-                <p><strong>Username:</strong> {user.username}</p>
+                <p>
+                  <strong>Name:</strong> {user.name}
+                </p>
+                <p>
+                  <strong>Username:</strong> {user.username}
+                </p>
                 <button onClick={() => setEditUserForm(true)}>Edit Info</button>
               </>
             )}
@@ -224,20 +255,44 @@ const Account = ({ token }) => {
               {showCreateForm ? "Cancel" : "Create New Event"}
             </button>
             {showCreateForm && <EventForm onSubmit={handleCreateEvent} />}
-            {editingEvent && <EventForm initialData={editingEvent} onSubmit={(formData) => handleEventUpdate(editingEvent.id, formData)} />}
+            {editingEvent && (
+              <EventForm
+                key={editingEvent.id} // forces re-render on update
+                initialData={editingEvent}
+                onSubmit={(formData) =>
+                  handleEventUpdate(editingEvent.id, formData)
+                }
+              />
+            )}
+
             <ul className="event-list">
               {userEvents.map((event) => (
                 <li key={event.id}>
                   <h4>{event.event_name}</h4>
                   <img
-                    src={event.picture?.trim() ? `http://localhost:3001/uploads/${event.picture}` : "https://placehold.co/150x220/zzz/000?text=NoImage"}
-                    onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
+                    src={
+                      event.picture?.trim()
+                        ? `http://localhost:3001/uploads/${event.picture}`
+                        : "https://placehold.co/150x220/zzz/000?text=NoImage"
+                    }
+                    onError={(e) =>
+                      (e.currentTarget.src =
+                        "https://placehold.co/150x220/zzz/000?text=NoImage")
+                    }
                     alt={event.event_name || "Event Image"}
                   />
                   <div>
-                    <button onClick={() => window.location.href = `/event/${event.id}`}>View</button>
+                    <button
+                      onClick={() =>
+                        (window.location.href = `/event/${event.id}`)
+                      }
+                    >
+                      View
+                    </button>
                     <button onClick={() => setEditingEvent(event)}>Edit</button>
-                    <button onClick={() => handleRemoveEvent(event.id)}>Delete</button>
+                    <button onClick={() => handleRemoveEvent(event.id)}>
+                      Delete
+                    </button>
                   </div>
                 </li>
               ))}
@@ -248,7 +303,12 @@ const Account = ({ token }) => {
         {activeTab === "bookedEvents" && (
           <div className="booked-events">
             <h3>Your Booked Events</h3>
-            <input type="text" placeholder="Search booked events..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <input
+              type="text"
+              placeholder="Search booked events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <select onChange={(e) => handleSortBookings(e.target.value)}>
               <option value="upcoming">Upcoming First</option>
               <option value="past">Past First</option>
@@ -258,8 +318,16 @@ const Account = ({ token }) => {
                 <li key={event.id}>
                   <h4>{event.event_name}</h4>
                   <p>{formatEventDate(event.date, event.start_time)}</p>
-                  <button onClick={() => window.location.href = `/event/${event.id}`}>View</button>
-                  <button onClick={() => handleCancelBooking(event.id)}>Cancel Booking</button>
+                  <button
+                    onClick={() =>
+                      (window.location.href = `/event/${event.id}`)
+                    }
+                  >
+                    View
+                  </button>
+                  <button onClick={() => handleCancelBooking(event.id)}>
+                    Cancel Booking
+                  </button>
                 </li>
               ))}
             </ul>
@@ -275,13 +343,22 @@ const Account = ({ token }) => {
                   <Link to={`/event/${event.id}`}>
                     <h4>{event.event_name}</h4>
                     <img
-                      src={event.picture?.trim() ? `http://localhost:3001/uploads/${event.picture}` : "https://placehold.co/150x220/zzz/000?text=NoImage"}
-                      onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
+                      src={
+                        event.picture?.trim()
+                          ? `http://localhost:3001/uploads/${event.picture}`
+                          : "https://placehold.co/150x220/zzz/000?text=NoImage"
+                      }
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "https://placehold.co/150x220/zzz/000?text=NoImage")
+                      }
                       alt={event.event_name || "Event Image"}
                     />
                     <p>{formatEventDate(event.date, event.start_time)}</p>
                   </Link>
-                  <button onClick={() => handleRemoveFavorite(event.id)}>Remove Favorite</button>
+                  <button onClick={() => handleRemoveFavorite(event.id)}>
+                    Remove Favorite
+                  </button>
                 </li>
               ))}
             </ul>
@@ -293,4 +370,3 @@ const Account = ({ token }) => {
 };
 
 export default Account;
-

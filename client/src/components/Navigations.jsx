@@ -12,18 +12,18 @@ const Navigations = () => {
       if (data) {
         setUser(data);
       } else {
-        setUser(null); // clear if fetch failed
+        setUser(null);
       }
     }
 
     getUser();
-  }, [location]); //  re-run when route changes (important after login)
+  }, [location]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     setUser(null);
-    window.location.href = "/"; // force refresh
+    window.location.href = "/";
   };
 
   return (
@@ -40,6 +40,12 @@ const Navigations = () => {
         </Link>
       ) : (
         <>
+          <Link to="/booked-events">
+            <button className="nav-link">Booked Events</button>
+          </Link>
+          <Link to="/favorite-events">
+            <button className="nav-link">Favorites</button>
+          </Link>
           <Link to="/users/account">
             <button className="nav-link">Account</button>
           </Link>
@@ -53,4 +59,3 @@ const Navigations = () => {
 };
 
 export default Navigations;
-

@@ -38,8 +38,6 @@ const SingleEvent = ({ token }) => {
           const userFavorites = await fetchUserFavorites(token);
           const userBookings = await fetchUserBookings(token);
   
-          console.log("Fetched bookings:", userBookings); // 👀 LOG THIS
-  
           setIsFavorited(
             userFavorites.some(
               (fav) => String(fav.event_id).trim() === String(id).trim()
@@ -53,7 +51,6 @@ const SingleEvent = ({ token }) => {
           );
         }
       } catch (err) {
-        console.error(err);
         setError(err.message || "Failed to load event data.");
       } finally {
         setIsLoading(false);
@@ -120,7 +117,6 @@ const SingleEvent = ({ token }) => {
         )
       );
     } catch (err) {
-      console.error("Booking error:", err.message);
       setError("Failed to update booking.");
     }
   };

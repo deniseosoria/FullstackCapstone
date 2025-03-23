@@ -6,8 +6,9 @@ import SingleEvent from "./components/SingleEvent";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Account from "./components/Account";
+import BookedEvents from './components/BookedEvents'
+import FavoriteEvents from "./components/FavoriteEvents";
 import "./App.css";
-
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
@@ -62,6 +63,14 @@ function App() {
                   <p>Please register or log in.</p>
                 )
               }
+            />
+            <Route
+              path="/booked-events"
+              element={<BookedEvents token={token} />}
+            />
+            <Route
+              path="/favorite-events"
+              element={<FavoriteEvents token={token} />}
             />
           </Routes>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "../EventForm.css"
 
 const EventForm = ({ onSubmit, initialData = {} }) => {
   const [formData, setFormData] = useState({
@@ -19,11 +20,16 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
       const formattedData = {
-        ...initialData,
+        event_name: initialData.event_name || "",
+        description: initialData.description || "",
+        event_type: initialData.event_type || "",
+        address: initialData.address || "",
+        price: initialData.price || "",
+        capacity: initialData.capacity || "",
         date: initialData.date ? initialData.date.slice(0, 10) : "",
         start_time: initialData.start_time || "",
         end_time: initialData.end_time || "",
-        picture: null, // We only allow new upload, not reusing file directly
+        picture: null,
       };
 
       setFormData(formattedData);
@@ -45,13 +51,40 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    const data = new FormData();
+
+    const allowedFields = [
+      "event_name",
+      "description",
+      "event_type",
+      "address",
+      "price",
+      "capacity",
+      "date",
+      "start_time",
+      "end_time",
+      "picture",
+    ];
+
+    allowedFields.forEach((key) => {
+      if (formData[key] !== null && formData[key] !== undefined) {
+        data.append(key, formData[key]);
+      }
+    });
+
+    await onSubmit(data);
+    setPreviewImage(null);
+    setFormData((prev) => ({ ...prev, picture: null }));
   };
 
   return (
-    <form className="event-form" onSubmit={handleSubmit} encType="multipart/form-data">
+    <form
+      className="event-form"
+      onSubmit={handleSubmit}
+      encType="multipart/form-data"
+    >
       <label>
         Event Name:
         <input
@@ -75,7 +108,12 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
 
       <label>
         Category:
-        <select name="event_type" value={formData.event_type} onChange={handleChange} required>
+        <select
+          name="event_type"
+          value={formData.event_type}
+          onChange={handleChange}
+          required
+        >
           <option value="">Select Category</option>
           <option value="Music">Music</option>
           <option value="Art">Art</option>
@@ -153,23 +191,33 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
 
       <label>
         Upload Image:
-        <input type="file" name="picture" accept="image/*" onChange={handleChange} />
+        <input
+          type="file"
+          name="picture"
+          accept="image/*"
+          onChange={handleChange}
+        />
       </label>
 
-      {previewImage && (
-        <div style={{ marginTop: "1rem" }}>
+      {(previewImage || initialData.picture) && (
+        <div className="event-image-preview">
           <img
-            src={previewImage}
-            alt="Preview"
-            style={{ maxWidth: "200px", height: "auto", borderRadius: "8px" }}
+            src={
+              previewImage
+                ? previewImage
+                : `http://localhost:3001/uploads/${initialData.picture}`
+            }
+            alt="Event"
+            className="event-image"
           />
         </div>
       )}
 
-      <button type="submit" style={{ marginTop: "1rem" }}>Save Event</button>
+      <button type="submit" className="submit-button">
+        Save Event
+      </button>
     </form>
   );
 };
 
 export default EventForm;
-

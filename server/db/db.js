@@ -4,7 +4,7 @@
 
 const pg = require("pg");
 const bcrypt = require("bcrypt");
-
+const fs = require("fs");
 
 const SALT_ROUNDS = 10;
 
@@ -12,10 +12,7 @@ const SALT_ROUNDS = 10;
 // DATABASE CONNECTION (PostgreSQL)
 // ==============================
 
-const client = new pg.Client(
-  process.env.DATABASE_URL
-);
-
+const client = new pg.Client(process.env.DATABASE_URL);
 
 /**
  * USER Methods
@@ -137,8 +134,8 @@ async function createEvent({
       rows: [event],
     } = await client.query(
       `INSERT INTO events (user_id, event_name, description, event_type, address, price, capacity, date, start_time, end_time, picture)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-           RETURNING *;`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING *;`,
       [
         user_id,
         event_name,
@@ -161,9 +158,26 @@ async function createEvent({
 }
 
 async function updateEvent(event_id, fields = {}) {
-  if (Object.keys(fields).length === 0) return;
+  const allowedFields = [
+    "event_name",
+    "description",
+    "event_type",
+    "address",
+    "price",
+    "capacity",
+    "date",
+    "start_time",
+    "end_time",
+    "picture",
+  ];
 
-  const setString = Object.keys(fields)
+  const safeFields = Object.fromEntries(
+    Object.entries(fields).filter(([key]) => allowedFields.includes(key))
+  );
+
+  if (Object.keys(safeFields).length === 0) return;
+
+  const setString = Object.keys(safeFields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
 
@@ -172,16 +186,19 @@ async function updateEvent(event_id, fields = {}) {
       rows: [event],
     } = await client.query(
       `UPDATE events SET ${setString} WHERE id=$${
-        Object.keys(fields).length + 1
+        Object.keys(safeFields).length + 1
       } RETURNING *;`,
-      [...Object.values(fields), event_id]
+      [...Object.values(safeFields), event_id]
     );
 
     return event;
   } catch (error) {
+    console.error(" updateEvent SQL ERROR:", error.stack || error.message || error);
     throw error;
   }
 }
+
+
 
 const getAllEvents = async (limit = 10, offset = 0) => {
   try {
@@ -208,23 +225,33 @@ const getEventById = async (id) => {
 
 async function getUserEvents(user_id) {
   try {
-    const result = await client.query(`
-      SELECT * FROM events WHERE user_id = $1
-    `, [user_id]);
+    const result = await client.query(
+      `SELECT * FROM events WHERE user_id = $1 ORDER BY date ASC`,
+      [user_id]
+    );
     return result.rows;
   } catch (error) {
     throw error;
   }
 }
 
-
 const deleteEvent = async (id, user_id) => {
   try {
-    const result = await client.query(
+    const {
+      rows: [event],
+    } = await client.query(
       `DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *;`,
       [id, user_id]
     );
-    return result.rows[0]; // Returns the deleted event
+
+    if (event && event.picture) {
+      const imagePath = path.join(__dirname, "../uploads", event.picture);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    return event;
   } catch (error) {
     throw error;
   }
@@ -263,7 +290,6 @@ async function getUserBookings(user_id) {
     throw error;
   }
 }
-
 
 // Cancel a booking
 const cancelBooking = async (userId, eventId) => {
@@ -374,8 +400,6 @@ async function getUserFavorites(user_id) {
     throw error;
   }
 }
-
-
 
 // Remove an event from favorites
 const removeFavorite = async (userId, eventId) => {
