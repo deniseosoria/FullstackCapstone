@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchUserBookings } from "../api";
+import { fetchUserBookings, fetchCancelBooking } from "../api"; 
 import { Link } from "react-router-dom";
 
 const BookedEvents = ({ token }) => {
@@ -22,6 +22,15 @@ const BookedEvents = ({ token }) => {
 
     loadBookings();
   }, [token]);
+
+  const handleCancelBooking = async (eventId) => {
+    try {
+      await fetchCancelBooking(eventId, token);
+      setBookedEvents((prev) => prev.filter((event) => event.id !== eventId));
+    } catch (err) {
+      setError("Failed to cancel booking.");
+    }
+  };
 
   const formatEventDate = (dateString, timeString) => {
     const eventDate = new Date(dateString);
@@ -46,6 +55,9 @@ const BookedEvents = ({ token }) => {
               <Link to={`/event/${event.id}`}>
                 <button>View Event</button>
               </Link>
+              <button onClick={() => handleCancelBooking(event.id)}>
+                Cancel Booking
+              </button>
             </li>
           ))}
         </ul>
@@ -57,3 +69,4 @@ const BookedEvents = ({ token }) => {
 };
 
 export default BookedEvents;
+

@@ -6,8 +6,9 @@ import SingleEvent from "./components/SingleEvent";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Account from "./components/Account";
-import BookedEvents from './components/BookedEvents'
+import BookedEvents from "./components/BookedEvents";
 import FavoriteEvents from "./components/FavoriteEvents";
+import CreateEventPage from "./components/CreateEventPage.jsx";
 import "./App.css";
 
 function App() {
@@ -63,6 +64,10 @@ function App() {
                   <p>Please register or log in.</p>
                 )
               }
+            />
+            <Route
+              path="/create-event"
+              element={<CreateEventPage token={token} />}
             />
             <Route
               path="/booked-events"

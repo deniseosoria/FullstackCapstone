@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchUserFavorites } from "../api";
+import { fetchUserFavorites, fetchUnfavorite } from "../api"; 
 import { Link } from "react-router-dom";
 
 const FavoriteEvents = ({ token }) => {
@@ -22,6 +22,15 @@ const FavoriteEvents = ({ token }) => {
 
     loadFavorites();
   }, [token]);
+
+  const handleUnfavorite = async (eventId) => {
+    try {
+      await fetchUnfavorite(eventId, token);
+      setFavorites((prev) => prev.filter((event) => event.id !== eventId));
+    } catch (err) {
+      setError("Failed to unfavorite event.");
+    }
+  };
 
   const formatEventDate = (dateString, timeString) => {
     const eventDate = new Date(dateString);
@@ -46,6 +55,9 @@ const FavoriteEvents = ({ token }) => {
               <Link to={`/event/${event.id}`}>
                 <button>View Event</button>
               </Link>
+              <button onClick={() => handleUnfavorite(event.id)}>
+                Unfavorite
+              </button>
             </li>
           ))}
         </ul>
@@ -57,3 +69,4 @@ const FavoriteEvents = ({ token }) => {
 };
 
 export default FavoriteEvents;
+

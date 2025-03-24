@@ -40,6 +40,9 @@ const Navigations = () => {
         </Link>
       ) : (
         <>
+          <Link to="/create-event">
+            <button className="nav-link">Create Event</button>
+          </Link>
           <Link to="/booked-events">
             <button className="nav-link">Booked Events</button>
           </Link>

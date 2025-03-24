@@ -84,15 +84,12 @@ const SingleEvent = ({ token }) => {
   
       if (isFavorited) {
         await fetchUnfavorite(event.id, token);
-        setIsFavorited(false); // ✅ immediate UI update
+        setIsFavorited(false); // immediate UI update
       } else {
         await fetchFavorite(event.id, token);
-        setIsFavorited(true); // ✅ immediate UI update
+        setIsFavorited(true); // immediate UI update
       }
   
-      // Optional: refetch to stay in sync
-      // const updatedFavorites = await fetchUserFavorites(token);
-      // setIsFavorited(updatedFavorites.some(fav => String(fav.event_id) === String(id)));
   
     } catch (err) {
       setError("Failed to update favorite.");
@@ -111,10 +108,6 @@ const SingleEvent = ({ token }) => {
         if (bookRes.error) throw new Error(bookRes.error);
         setIsBooked(true); 
       }
-  
-      // Optional: refetch bookings for sync, but not required for immediate UI
-      // const updatedBookings = await fetchUserBookings(token);
-      // setIsBooked(updatedBookings.some(b => b.event_id === event.id));
   
     } catch (err) {
       setError("Failed to update booking.");
