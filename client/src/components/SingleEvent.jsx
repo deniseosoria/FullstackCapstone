@@ -100,26 +100,25 @@ const SingleEvent = ({ token }) => {
   const toggleBooking = async () => {
     try {
       if (!event || !token) return;
-
+  
       if (isBooked) {
         await fetchCancelBooking(event.id, token);
+        setIsBooked(false); 
       } else {
         const bookRes = await fetchBook(event.id, token);
         if (bookRes.error) throw new Error(bookRes.error);
+        setIsBooked(true); 
       }
-
-      const updatedBookings = await fetchUserBookings(token);
-      if (updatedBookings.error) throw new Error(updatedBookings.error);
-
-      setIsBooked(
-        updatedBookings.some(
-          (booking) => String(booking.event_id) === String(event.id)
-        )
-      );
+  
+      // Optional: refetch bookings for sync, but not required for immediate UI
+      // const updatedBookings = await fetchUserBookings(token);
+      // setIsBooked(updatedBookings.some(b => b.event_id === event.id));
+  
     } catch (err) {
       setError("Failed to update booking.");
     }
   };
+  
 
   const submitReview = async () => {
     try {
