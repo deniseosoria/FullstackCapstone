@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import {
   fetchUserAccount,
   fetchUserEvents,
@@ -13,6 +12,7 @@ import {
   fetchUnfavorite,
 } from "../api";
 import EventForm from "./EventForm";
+import EventCard from "./EventCard";
 import "../Account.css";
 
 const Account = ({ token }) => {
@@ -21,7 +21,6 @@ const Account = ({ token }) => {
   const [bookedEvents, setBookedEvents] = useState([]);
   const [favoriteEvents, setFavoriteEvents] = useState([]);
   const [newUserEvent, setNewUserEvent] = useState(null);
-  const [updateEvent, setUpdateEvent] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeTab, setActiveTab] = useState("manageEvents");
@@ -69,8 +68,11 @@ const Account = ({ token }) => {
 
   async function handleCreateEvent(formData) {
     try {
-      const { event: createEventData } = await fetchCreateEvent(formData, token);
-  
+      const { event: createEventData } = await fetchCreateEvent(
+        formData,
+        token
+      );
+
       setUserEvents((prev) => [...prev, createEventData]);
       setNewUserEvent(createEventData);
       setSuccess("Event created successfully.");
@@ -79,7 +81,6 @@ const Account = ({ token }) => {
       setError("Failed to create event.");
     }
   }
-  
 
   const handleEventUpdate = async (eventId, formData) => {
     try {
@@ -195,17 +196,19 @@ const Account = ({ token }) => {
           Favorite Events
         </button>
       </div>
-  
+
       <div className="content">
         {error && <p className="error">{error}</p>}
         {success && <p className="success">{success}</p>}
-  
+
         {/* Account Info */}
         {activeTab === "accountInfo" && (
           <div className="account-info">
             <h2>Welcome, {user.name}!</h2>
-            <p><strong>User ID:</strong> {user.id}</p>
-  
+            <p>
+              <strong>User ID:</strong> {user.id}
+            </p>
+
             {editUserForm ? (
               <form onSubmit={handleUserUpdate}>
                 <label>
@@ -237,14 +240,18 @@ const Account = ({ token }) => {
               </form>
             ) : (
               <>
-                <p><strong>Name:</strong> {user.name}</p>
-                <p><strong>Username:</strong> {user.username}</p>
+                <p>
+                  <strong>Name:</strong> {user.name}
+                </p>
+                <p>
+                  <strong>Username:</strong> {user.username}
+                </p>
                 <button onClick={() => setEditUserForm(true)}>Edit Info</button>
               </>
             )}
           </div>
         )}
-  
+
         {/* Manage Events */}
         {activeTab === "manageEvents" && (
           <div className="manage-events">
@@ -252,45 +259,34 @@ const Account = ({ token }) => {
             <button onClick={() => setShowCreateForm(!showCreateForm)}>
               {showCreateForm ? "Cancel" : "Create New Event"}
             </button>
-  
+
             {showCreateForm && <EventForm onSubmit={handleCreateEvent} />}
             {editingEvent && (
               <EventForm
                 key={editingEvent.id}
                 initialData={editingEvent}
-                onSubmit={(formData) => handleEventUpdate(editingEvent.id, formData)}
+                onSubmit={(formData) =>
+                  handleEventUpdate(editingEvent.id, formData)
+                }
               />
             )}
-  
+
             <div className="event-grid">
               {userEvents.map((event) => (
-                <div key={event.id} className="event-card">
-                  <h4>{event.event_name}</h4>
-                  <img
-                    src={
-                      event.picture?.trim()
-                        ? `http://localhost:3001/uploads/${event.picture}`
-                        : "https://placehold.co/150x220/zzz/000?text=NoImage"
-                    }
-                    onError={(e) =>
-                      (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")
-                    }
-                    alt={event.event_name || "Event Image"}
-                  />
-                  <p>{formatEventDate(event.date, event.start_time)}</p>
-                  <div className="event-buttons">
-                    <button onClick={() => (window.location.href = `/event/${event.id}`)}>
-                      View
-                    </button>
-                    <button onClick={() => setEditingEvent(event)}>Edit</button>
-                    <button onClick={() => handleRemoveEvent(event.id)}>Delete</button>
-                  </div>
-                </div>
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onEdit={setEditingEvent}
+                  onDelete={handleRemoveEvent}
+                  showEdit
+                  showDelete
+                />
               ))}
             </div>
           </div>
         )}
-  
+
         {/* Booked Events */}
         {activeTab === "bookedEvents" && (
           <div className="booked-events">
@@ -305,53 +301,35 @@ const Account = ({ token }) => {
               <option value="upcoming">Upcoming First</option>
               <option value="past">Past First</option>
             </select>
-  
+
             <div className="event-grid">
               {filteredBookedEvents.map((event) => (
-                <div key={event.id} className="event-card">
-                  <h4>{event.event_name}</h4>
-                  <p>{formatEventDate(event.date, event.start_time)}</p>
-                  <div className="event-buttons">
-                    <button onClick={() => (window.location.href = `/event/${event.id}`)}>
-                      View
-                    </button>
-                    <button onClick={() => handleCancelBooking(event.id)}>
-                      Cancel Booking
-                    </button>
-                  </div>
-                </div>
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onCancelBooking={handleCancelBooking}
+                  showCancel
+                />
               ))}
             </div>
           </div>
         )}
-  
+
         {/* Favorite Events */}
         {activeTab === "favoriteEvents" && (
           <div className="favorite-events">
             <h3>Your Favorite Events</h3>
-  
+
             <div className="event-grid">
               {favoriteEvents.map((event) => (
-                <div key={event.id} className="event-card">
-                  <Link to={`/event/${event.id}`}>
-                    <h4>{event.event_name}</h4>
-                    <img
-                    src={
-                      event.picture?.trim()
-                        ? `http://localhost:3001/uploads/${event.picture}`
-                        : "https://placehold.co/150x220/zzz/000?text=NoImage"
-                    }
-                    onError={(e) =>
-                      (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")
-                    }
-                    alt={event.event_name || "Event Image"}
-                  />
-                    <p>{formatEventDate(event.date, event.start_time)}</p>
-                  </Link>
-                  <button onClick={() => handleRemoveFavorite(event.id)}>
-                    Remove Favorite
-                  </button>
-                </div>
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onRemoveFavorite={handleRemoveFavorite}
+                  showRemoveFavorite
+                />
               ))}
             </div>
           </div>
@@ -359,7 +337,6 @@ const Account = ({ token }) => {
       </div>
     </div>
   );
-  
 };
 
 export default Account;
