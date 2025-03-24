@@ -29,14 +29,6 @@ const Navigations = () => {
 
   return (
     <nav className="nav-container">
-      <div className="nav-left">
-        {location.pathname !== "/" && (
-          <Link to="/" className="nav-link">
-            Home
-          </Link>
-        )}
-      </div>
-
       <div className="nav-right">
         {!user ? (
           <Link to="/users/login" className="nav-button">

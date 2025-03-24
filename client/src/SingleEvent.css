@@ -10,6 +10,22 @@
     color: #333;
     font-family: 'Helvetica Neue', sans-serif;
   }
+
+  .back-button {
+    background: transparent;
+    color: #ff385c;
+    font-size: 1rem;
+    border: none;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: left;
+  }
+  
+  .back-button:hover {
+    text-decoration: underline;
+  }
+  
   
   .single-event h1 {
     font-size: 2rem;
@@ -34,6 +50,7 @@
   
   .event-actions {
     display: flex;
+    justify-content: center;
     gap: 1rem;
     margin: 1rem 0;
   }
@@ -83,3 +100,16 @@
     background-color: #f9f9f9;
     border-radius: 6px;
   }
+
+  @media screen and (max-width: 500px) {
+    .event-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .event-actions button {
+      width: 100%;
+      max-width: 250px;
+    }
+  }
+  
