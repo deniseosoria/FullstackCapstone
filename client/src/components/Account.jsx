@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchUserAccount,
   fetchUserEvents,
@@ -16,6 +17,7 @@ import EventCard from "./EventCard";
 import "../Account.css";
 
 const Account = ({ token }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userEvents, setUserEvents] = useState([]);
   const [bookedEvents, setBookedEvents] = useState([]);
@@ -276,7 +278,7 @@ const Account = ({ token }) => {
                 <EventCard
                   key={event.id}
                   event={event}
-                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onView={() => navigate(`/event/${event.id}`, { state: { from: "/users/account" } })}
                   onEdit={setEditingEvent}
                   onDelete={handleRemoveEvent}
                   showEdit
@@ -307,7 +309,7 @@ const Account = ({ token }) => {
                 <EventCard
                   key={event.id}
                   event={event}
-                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onView={() => navigate(`/event/${event.id}`, { state: { from: "/users/account" } })}
                   onCancelBooking={handleCancelBooking}
                   showCancel
                 />
@@ -326,7 +328,7 @@ const Account = ({ token }) => {
                 <EventCard
                   key={event.id}
                   event={event}
-                  onView={() => (window.location.href = `/event/${event.id}`)}
+                  onView={() => navigate(`/event/${event.id}`, { state: { from: "/users/account" } })}
                   onRemoveFavorite={handleRemoveFavorite}
                   showRemoveFavorite
                 />

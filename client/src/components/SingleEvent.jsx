@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
+
 import {
   fetchEventById,
   fetchEventReviews,
@@ -15,7 +16,9 @@ import "../SingleEvent.css";
 
 const SingleEvent = ({ token }) => {
   const { id } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [referrer, setReferrer] = useState(null);
   const [event, setEvent] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,24 +30,31 @@ const SingleEvent = ({ token }) => {
   const [rating, setRating] = useState(5);
 
   useEffect(() => {
+    // Only run on first mount
+    if (location.state?.from) {
+      setReferrer(location.state.from);
+    }
+  }, [location]);
+
+  useEffect(() => {
     async function fetchData() {
       try {
         const eventData = await fetchEventById(id);
         setEvent(eventData);
-  
+
         const reviewsData = await fetchEventReviews(id);
         setReviews(reviewsData);
-  
+
         if (token) {
           const userFavorites = await fetchUserFavorites(token);
           const userBookings = await fetchUserBookings(token);
-  
+
           setIsFavorited(
             userFavorites.some(
               (fav) => String(fav.event_id).trim() === String(id).trim()
             )
           );
-  
+
           setIsBooked(
             userBookings.some(
               (booking) => booking.event_name === eventData.event_name
@@ -57,9 +67,10 @@ const SingleEvent = ({ token }) => {
         setIsLoading(false);
       }
     }
-  
+
     fetchData();
   }, [id, token]);
+
 
   const formatEventDate = (dateString, timeString) => {
     if (!dateString || !timeString) return "Date/time unavailable";
@@ -82,7 +93,7 @@ const SingleEvent = ({ token }) => {
   const toggleFavorite = async () => {
     try {
       if (!event || !token) return;
-  
+
       if (isFavorited) {
         await fetchUnfavorite(event.id, token);
         setIsFavorited(false); // immediate UI update
@@ -90,8 +101,6 @@ const SingleEvent = ({ token }) => {
         await fetchFavorite(event.id, token);
         setIsFavorited(true); // immediate UI update
       }
-  
-  
     } catch (err) {
       setError("Failed to update favorite.");
     }
@@ -100,21 +109,19 @@ const SingleEvent = ({ token }) => {
   const toggleBooking = async () => {
     try {
       if (!event || !token) return;
-  
+
       if (isBooked) {
         await fetchCancelBooking(event.id, token);
-        setIsBooked(false); 
+        setIsBooked(false);
       } else {
         const bookRes = await fetchBook(event.id, token);
         if (bookRes.error) throw new Error(bookRes.error);
-        setIsBooked(true); 
+        setIsBooked(true);
       }
-  
     } catch (err) {
       setError("Failed to update booking.");
     }
   };
-  
 
   const submitReview = async () => {
     try {
@@ -155,93 +162,100 @@ const SingleEvent = ({ token }) => {
       )
     : null;
 
-    return (
-      <div className="single-event">
-        {/* Back button */}
-        <button onClick={() => navigate(-1)} className="back-button">
-          ← Back
-        </button>
-    
-        <h1>{event.event_name || "Unknown Name"}</h1>
-        {averageRating && <h3>Average Rating: {averageRating}⭐</h3>}
-        <h3>{formatEventDate(event.date, event.start_time)}</h3>
-    
-        <img
-          src={
-            event.picture?.trim() ||
-            "https://placehold.co/150x220/zzz/000?text=NoImage"
-          }
-          alt={event.event_name || "Event Image"}
-          onError={(e) =>
-            (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")
-          }
-        />
-    
-        <h4>
-          {event.price === 0
-            ? "Free"
-            : event.price
-            ? `$${event.price}`
-            : "Price Unavailable"}
-        </h4>
-    
-        <p>{event.description || "No description available."}</p>
-    
-        {!token && (
-          <p style={{ marginTop: "1rem", color: "#555" }}>
-            Please <Link to="/login">log in</Link> to favorite, book, or leave a review.
-          </p>
-        )}
-    
-        {token && (
-          <div className="event-actions">
-            <button onClick={toggleFavorite}>
-              {isFavorited ? "★ Unfavorite" : "☆ Favorite"}
-            </button>
-            <button onClick={toggleBooking}>
-              {isBooked ? "Cancel Booking" : "Book Now"}
-            </button>
-          </div>
-        )}
-    
-        {token && (
-          <div>
-            <h3>Leave a Review</h3>
-            <select
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-            >
-              {[1, 2, 3, 4, 5].map((r) => (
-                <option key={r} value={r}>
-                  {r} Star
-                </option>
-              ))}
-            </select>
-            <textarea
-              placeholder="Write your review..."
-              value={review}
-              onChange={(e) => setReview(e.target.value)}
-            />
-            <button onClick={submitReview}>Submit Review</button>
-          </div>
-        )}
-    
-        <h2>Reviews</h2>
-        {reviews.length > 0 ? (
-          <ul className="review-list">
-            {reviews.map((review) => (
-              <li key={review.id}>
-                <strong>{review.rating}⭐</strong>: {review.text_review}
-              </li>
+  return (
+    <div className="single-event">
+      {/* Back button */}
+      <button onClick={() => navigate(referrer || -1)} className="back-button">
+        ←{" "}
+        {referrer === "/users/account"
+          ? "Back to Account"
+          : referrer === "/"
+          ? "Back to All Events"
+          : "Back"}
+      </button>
+
+      <h1>{event.event_name || "Unknown Name"}</h1>
+      {averageRating && <h3>Average Rating: {averageRating}⭐</h3>}
+      <h3>{formatEventDate(event.date, event.start_time)}</h3>
+
+      <img
+        src={
+          event.picture?.trim() ||
+          "https://placehold.co/150x220/zzz/000?text=NoImage"
+        }
+        alt={event.event_name || "Event Image"}
+        onError={(e) =>
+          (e.currentTarget.src =
+            "https://placehold.co/150x220/zzz/000?text=NoImage")
+        }
+      />
+
+      <h4>
+        {event.price === 0
+          ? "Free"
+          : event.price
+          ? `$${event.price}`
+          : "Price Unavailable"}
+      </h4>
+
+      <p>{event.description || "No description available."}</p>
+
+      {!token && (
+        <p style={{ marginTop: "1rem", color: "#555" }}>
+          Please <Link to="/login">log in</Link> to favorite, book, or leave a
+          review.
+        </p>
+      )}
+
+      {token && (
+        <div className="event-actions">
+          <button onClick={toggleFavorite}>
+            {isFavorited ? "★ Unfavorite" : "☆ Favorite"}
+          </button>
+          <button onClick={toggleBooking}>
+            {isBooked ? "Cancel Booking" : "Book Now"}
+          </button>
+        </div>
+      )}
+
+      {token && (
+        <div>
+          <h3>Leave a Review</h3>
+          <select
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+          >
+            {[1, 2, 3, 4, 5].map((r) => (
+              <option key={r} value={r}>
+                {r} Star
+              </option>
             ))}
-          </ul>
-        ) : (
-          <p>No reviews yet.</p>
-        )}
-    
-        {success && <p style={{ color: "green" }}>{success}</p>}
-      </div>
-    );
+          </select>
+          <textarea
+            placeholder="Write your review..."
+            value={review}
+            onChange={(e) => setReview(e.target.value)}
+          />
+          <button onClick={submitReview}>Submit Review</button>
+        </div>
+      )}
+
+      <h2>Reviews</h2>
+      {reviews.length > 0 ? (
+        <ul className="review-list">
+          {reviews.map((review) => (
+            <li key={review.id}>
+              <strong>{review.rating}⭐</strong>: {review.text_review}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No reviews yet.</p>
+      )}
+
+      {success && <p style={{ color: "green" }}>{success}</p>}
+    </div>
+  );
 };
 
 export default SingleEvent;
