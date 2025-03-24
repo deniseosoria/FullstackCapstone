@@ -159,10 +159,11 @@ eventsRouter.patch(
         }
         updateFields.picture = req.file.filename;
       }
-
+      
       const updatedEvent = await updateEvent(eventId, updateFields);
       res.send({ event: updatedEvent });
     } catch (err) {
+
       res.status(500).send({ error: "Internal Server Error", details: err.message });
     
     
