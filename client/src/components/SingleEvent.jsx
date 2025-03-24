@@ -81,17 +81,19 @@ const SingleEvent = ({ token }) => {
   const toggleFavorite = async () => {
     try {
       if (!event || !token) return;
-
+  
       if (isFavorited) {
         await fetchUnfavorite(event.id, token);
+        setIsFavorited(false); // ✅ immediate UI update
       } else {
         await fetchFavorite(event.id, token);
+        setIsFavorited(true); // ✅ immediate UI update
       }
-
-      const updatedFavorites = await fetchUserFavorites(token);
-      setIsFavorited(
-        updatedFavorites.some((fav) => String(fav.event_id) === String(id))
-      );
+  
+      // Optional: refetch to stay in sync
+      // const updatedFavorites = await fetchUserFavorites(token);
+      // setIsFavorited(updatedFavorites.some(fav => String(fav.event_id) === String(id)));
+  
     } catch (err) {
       setError("Failed to update favorite.");
     }
