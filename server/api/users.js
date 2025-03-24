@@ -77,7 +77,7 @@ usersRouter.post("/login", async (req, res, next) => {
 
     const token = jwt.sign(
       { id: user.id, username },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "shhh",
       { expiresIn: "1w" }
     );
     res.send({ message: "You're logged in!", token });
@@ -111,7 +111,7 @@ usersRouter.post("/register", async (req, res, next) => {
         id: user.id,
         username,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "shhh",
       {
         expiresIn: "1w",
       }
