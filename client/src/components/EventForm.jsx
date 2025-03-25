@@ -189,7 +189,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
         />
       </label>
 
-      {/* <label>
+      <label>
         Upload Image:
         <input
           type="file"
@@ -211,7 +211,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
             className="event-image"
           />
         </div>
-      )} */}
+      )}
 
       <button type="submit" className="submit-button">
         Save Event

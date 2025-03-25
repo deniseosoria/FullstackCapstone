@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
-
 import {
   fetchEventById,
   fetchEventReviews,
@@ -30,7 +29,6 @@ const SingleEvent = ({ token }) => {
   const [rating, setRating] = useState(5);
 
   useEffect(() => {
-    // Only run on first mount
     if (location.state?.from) {
       setReferrer(location.state.from);
     }
@@ -49,15 +47,10 @@ const SingleEvent = ({ token }) => {
           const userFavorites = await fetchUserFavorites(token);
           const userBookings = await fetchUserBookings(token);
 
-          console.log("Fetched favorites:", userFavorites);
-          console.log("Fetched bookings:", userBookings);
-          console.log("Current event ID:", eventData.id);
-
           const matchedFavorite = userFavorites.find(
             (fav) => String(fav.id) === String(eventData.id)
           );
           setIsFavorited(!!matchedFavorite);
-          
 
           setIsBooked(
             userBookings.some(
@@ -99,10 +92,10 @@ const SingleEvent = ({ token }) => {
 
       if (isFavorited) {
         await fetchUnfavorite(event.id, token);
-        setIsFavorited(false); // immediate UI update
+        setIsFavorited(false);
       } else {
         await fetchFavorite(event.id, token);
-        setIsFavorited(true); // immediate UI update
+        setIsFavorited(true);
       }
     } catch (err) {
       setError("Failed to update favorite.");
@@ -165,9 +158,12 @@ const SingleEvent = ({ token }) => {
       )
     : null;
 
+  const imageUrl = event.picture?.trim()
+    ? `http://localhost:3001/uploads/${event.picture}`
+    : "https://placehold.co/150x220/zzz/000?text=NoImage";
+
   return (
     <div className="single-event">
-      {/* Back button */}
       <button onClick={() => navigate(referrer || -1)} className="back-button">
         ←{" "}
         {referrer === "/users/account"
@@ -182,14 +178,11 @@ const SingleEvent = ({ token }) => {
       <h3>{formatEventDate(event.date, event.start_time)}</h3>
 
       <img
-        src={
-          event.picture?.trim() ||
-          "https://placehold.co/150x220/zzz/000?text=NoImage"
-        }
+        src={imageUrl}
         alt={event.event_name || "Event Image"}
         onError={(e) =>
           (e.currentTarget.src =
-            "https://placehold.co/150x220/zzz/000?text=NoImage")
+            "https://placehold.co/150x220/zzz/000?text=Image+Unavailable")
         }
       />
 

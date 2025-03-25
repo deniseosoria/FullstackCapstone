@@ -142,28 +142,37 @@ const Events = () => {
         <div className="events-grid">
           {filteredEvents.map((event) => (
             <Link className="event-card" key={event.id} to={`/event/${event.id}`}>
-              <img
-                src={event.picture?.trim() || "https://placehold.co/150x220/zzz/000?text=NoImage"}
-                onError={(e) => (e.currentTarget.src = "https://placehold.co/150x220/zzz/000?text=NoImage")}
-                alt={event.event_name || "Event Image"}
-              />
-              <div className="event-info">
-                <h3>{event.event_name || "Unknown Event"}</h3>
-                <p>{formatEventDate(event.date, event.start_time)}</p>
+            <img
+              src={
+                event.picture?.trim()
+                  ? `http://localhost:3001/uploads/${event.picture}`
+                  : "https://placehold.co/150x220/zzz/000?text=NoImage"
+              }
+              onError={(e) =>
+                (e.currentTarget.src =
+                  "https://placehold.co/150x220/zzz/000?text=NoImage")
+              }
+              alt={event.event_name || "Event Image"}
+            />
+            <div className="event-info">
+              <h3>{event.event_name || "Unknown Event"}</h3>
+              <p>{formatEventDate(event.date, event.start_time)}</p>
+              <p>
+                {event.price !== null && event.price !== undefined
+                  ? event.price === 0
+                    ? "Free"
+                    : `$${event.price}`
+                  : "Price Unavailable"}
+              </p>
+              {reviewsMap[event.id]?.average && (
                 <p>
-                  {event.price !== null && event.price !== undefined
-                    ? event.price === 0
-                      ? "Free"
-                      : `$${event.price}`
-                    : "Price Unavailable"}
+                  ⭐ {reviewsMap[event.id].average} ({reviewsMap[event.id].count} review
+                  {reviewsMap[event.id].count !== 1 ? "s" : ""})
                 </p>
-                {reviewsMap[event.id]?.average && (
-                  <p>
-                    ⭐ {reviewsMap[event.id].average} ({reviewsMap[event.id].count} review{reviewsMap[event.id].count !== 1 ? "s" : ""})
-                  </p>
-                )}
-              </div>
-            </Link>
+              )}
+            </div>
+          </Link>
+          
           ))}
         </div>
       )}

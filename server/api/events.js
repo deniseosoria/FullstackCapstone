@@ -4,6 +4,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+const upload = require("../middleware/upload");
+
+
 const { requireUser } = require("./utils");
 const {
   createEvent,
@@ -26,7 +29,6 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
 
 /* ========= ROUTES ========= */
 
@@ -163,7 +165,6 @@ eventsRouter.patch(
       const updatedEvent = await updateEvent(eventId, updateFields);
       res.send({ event: updatedEvent });
     } catch (err) {
-
       res.status(500).send({ error: "Internal Server Error", details: err.message });
     
     

@@ -185,9 +185,7 @@ async function updateEvent(event_id, fields = {}) {
     const {
       rows: [event],
     } = await client.query(
-      `UPDATE events SET ${setString} WHERE id=$${
-        Object.keys(safeFields).length + 1
-      } RETURNING *;`,
+      `UPDATE events SET ${setString} WHERE id=$${Object.keys(safeFields).length + 1} RETURNING *;`,
       [...Object.values(safeFields), event_id]
     );
 
@@ -196,6 +194,7 @@ async function updateEvent(event_id, fields = {}) {
     throw error;
   }
 }
+
 
 const getAllEvents = async (limit = 10, offset = 0) => {
   try {
