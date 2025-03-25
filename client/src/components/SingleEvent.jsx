@@ -49,11 +49,15 @@ const SingleEvent = ({ token }) => {
           const userFavorites = await fetchUserFavorites(token);
           const userBookings = await fetchUserBookings(token);
 
-          setIsFavorited(
-            userFavorites.some(
-              (fav) => String(fav.event_id).trim() === String(id).trim()
-            )
+          console.log("Fetched favorites:", userFavorites);
+          console.log("Fetched bookings:", userBookings);
+          console.log("Current event ID:", eventData.id);
+
+          const matchedFavorite = userFavorites.find(
+            (fav) => String(fav.id) === String(eventData.id)
           );
+          setIsFavorited(!!matchedFavorite);
+          
 
           setIsBooked(
             userBookings.some(
@@ -70,7 +74,6 @@ const SingleEvent = ({ token }) => {
 
     fetchData();
   }, [id, token]);
-
 
   const formatEventDate = (dateString, timeString) => {
     if (!dateString || !timeString) return "Date/time unavailable";
