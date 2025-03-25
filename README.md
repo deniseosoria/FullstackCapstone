@@ -1,6 +1,6 @@
-# Eventify
+# Evently
 
-**Eventify** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Eventify helps people find exciting events and experiences in different cities.
+**Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Eventify helps people find exciting events and experiences in different cities.
 
 ## Features
 
