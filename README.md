@@ -1,6 +1,6 @@
 # Evently
 
-**Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Eventify helps people find exciting events and experiences in different cities.
+**Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Evently helps people find exciting events and experiences in different cities.
 
 ## Features
 
@@ -32,14 +32,12 @@
 **Frontend:**
 - React
 - React Router
-- Axios
-- Tailwind CSS (or your preferred styling framework)
+
 
 **Backend:**
 - Node.js
 - Express
 - PostgreSQL
-- Sequelize ORM
 - Multer (for image uploads)
 
 **Authentication:**
@@ -56,8 +54,8 @@
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/your-username/eventify.git
-   cd eventify
+   git clone git@github.com:deniseosoria/FullstackCapstone.git
+   cd FullstackCapstone
    ```
 
 2. Install dependencies:
@@ -86,7 +84,7 @@ Create a `.env` file in the root directory with:
 
 ```env
 PORT=3001
-DATABASE_URL=postgres://username:password@localhost:5432/eventify_db
+DATABASE_URL=postgres://username:password@localhost:5432/evently_db
 JWT_SECRET=your_jwt_secret
 ```
 
@@ -94,7 +92,7 @@ JWT_SECRET=your_jwt_secret
 ## Folder Structure
 
 ```
-eventify/
+evently/
 ├── client/          # React frontend
 ├── server/          # Express backend
 │   ├── controllers/
@@ -119,10 +117,5 @@ eventify/
 
 _Coming soon..._
 
-## License
-
-This project is licensed under the MIT License.
-
----
 
 Made with ❤️ for event lovers everywhere.
