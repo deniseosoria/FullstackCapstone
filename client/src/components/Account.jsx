@@ -102,7 +102,9 @@ const Account = ({ token }) => {
   async function handleRemoveEvent(eventId) {
     try {
       const deleted = await fetchDeleteEvent(eventId, token);
-      if (deleted?.event) {
+      console.log("Response from fetchDeleteEvent:", deleted);
+  
+      if (deleted?.event || deleted?.success) {
         setUserEvents((prev) => prev.filter((event) => event.id !== eventId));
         setSuccess("Event deleted successfully.");
       } else {
@@ -112,7 +114,8 @@ const Account = ({ token }) => {
       setError("Failed to delete event.");
     }
   }
-
+  
+  
   async function handleCancelBooking(eventId) {
     try {
       await fetchCancelBooking(eventId, token);
