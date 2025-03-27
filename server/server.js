@@ -25,17 +25,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS Setup for Frontend Access
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://your-frontend.onrender.com" 
+      "https://fullstackcapstone-1.onrender.com" 
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true  
   })
 );
+
 
 //  Serve Uploaded Files
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
