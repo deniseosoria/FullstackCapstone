@@ -45,14 +45,20 @@ app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 const api = require("./api/index.js");
 app.use("/api", api);
 
-// //  Serve Frontend (for production builds if using Vite or similar)
+app.get("/", (req, res) => {
+  res.send("✅ Backend is live!");
+});
+
+
+//  Serve Frontend (for production builds if using Vite or similar)
 // app.get("/", (req, res) =>
 //   res.sendFile(path.join(__dirname, "../client/dist/index.html"))
 // );
 // app.use(
 //   "/assets",
 //   express.static(path.join(__dirname, "../client/dist/assets"))
-// );
+//);
+
 
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err.stack || err.message || err);
