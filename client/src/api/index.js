@@ -1,5 +1,5 @@
 /** API Link */
-export const API_URL = `https://evently-5cf6.onrender.com`;
+export const API_URL = `import.meta.env.https://evently-5cf6.onrender.com/api/`;
 
 // ================================
 // Log in/Register fetch
