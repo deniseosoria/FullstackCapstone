@@ -178,15 +178,17 @@ async function updateEvent(event_id, fields = {}) {
   if (Object.keys(safeFields).length === 0) return;
 
   const setString = Object.keys(safeFields)
-    .map((key, index) => `"${key}"=$${index + 1}`)
+    .map((key, index) => `"${key}" = $${index + 1}`)
     .join(", ");
+
+  const values = [...Object.values(safeFields), event_id];
 
   try {
     const {
       rows: [event],
     } = await client.query(
-      `UPDATE events SET ${setString} WHERE id=$${Object.keys(safeFields).length + 1} RETURNING *;`,
-      [...Object.values(safeFields), event_id]
+      `UPDATE events SET ${setString} WHERE id = $${values.length} RETURNING *;`,
+      values
     );
 
     return event;
@@ -239,14 +241,7 @@ const deleteEvent = async (id, user_id) => {
       `DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *;`,
       [id, user_id]
     );
-
-    if (event && event.picture) {
-      const imagePath = path.join(__dirname, "../uploads", event.picture);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-
+    
     return event;
   } catch (error) {
     throw error;

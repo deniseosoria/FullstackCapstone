@@ -6,7 +6,6 @@ const fs = require("fs");
 
 const upload = require("../middleware/upload");
 
-
 const { requireUser } = require("./utils");
 const {
   createEvent,
@@ -28,7 +27,6 @@ const storage = multer.diskStorage({
     cb(null, unique);
   },
 });
-
 
 /* ========= ROUTES ========= */
 
@@ -161,13 +159,14 @@ eventsRouter.patch(
         }
         updateFields.picture = req.file.filename;
       }
-      
+
       const updatedEvent = await updateEvent(eventId, updateFields);
       res.send({ event: updatedEvent });
     } catch (err) {
-      res.status(500).send({ error: "Internal Server Error", details: err.message });
-    
-    
+      res
+        .status(500)
+        .send({ error: "Internal Server Error", details: err.message });
+
       next(err);
     }
   }
@@ -179,19 +178,34 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
     const { event_id } = req.params;
     const { id: user_id } = req.user;
 
+    // First, fetch the event to check ownership and access picture filename
+    const event = await getEventById(event_id);
+
+    if (!event || event.user_id !== user_id) {
+      return res.status(403).send({ error: "Not authorized or event not found." });
+    }
+
+    // Delete the image file if it exists
+    if (event.picture) {
+      const imagePath = path.join(__dirname, "../uploads", event.picture);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    // Delete the event from the database
     const deletedEvent = await deleteEvent(event_id, user_id);
 
     if (deletedEvent) {
       res.send({ event: deletedEvent, message: "Event successfully deleted." });
     } else {
-      next({
-        name: "EventNotFoundError",
-        message: "Event not found or you don't have permission to delete it.",
-      });
+      res.status(404).send({ error: "Event not found." });
     }
   } catch (err) {
-    next(err);
+    console.error("Error deleting event:", err.message);
+    res.status(500).send({ error: "Internal Server Error", details: err.message });
   }
 });
+
 
 module.exports = eventsRouter;

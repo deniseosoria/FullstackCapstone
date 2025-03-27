@@ -28,7 +28,10 @@ app.use((req, res, next) => {
 // CORS Setup for Frontend Access
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // Adjust if your frontend is hosted elsewhere
+    origin: [
+      "http://localhost:5173",
+      "https://your-frontend.onrender.com" 
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -41,14 +44,14 @@ app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 const api = require("./api/index.js");
 app.use("/api", api);
 
-//  Serve Frontend (for production builds if using Vite or similar)
-app.get("/", (req, res) =>
-  res.sendFile(path.join(__dirname, "../client/dist/index.html"))
-);
-app.use(
-  "/assets",
-  express.static(path.join(__dirname, "../client/dist/assets"))
-);
+// //  Serve Frontend (for production builds if using Vite or similar)
+// app.get("/", (req, res) =>
+//   res.sendFile(path.join(__dirname, "../client/dist/index.html"))
+// );
+// app.use(
+//   "/assets",
+//   express.static(path.join(__dirname, "../client/dist/assets"))
+// );
 
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err.stack || err.message || err);
@@ -66,7 +69,7 @@ const init = async () => {
   try {
     await client.connect();
     app.listen(port, () => {
-      console.log(` Server listening at http://localhost:${port}`);
+      console.log(`✅ Server is running on port ${port}`);
     });
   } catch (err) {
     console.error(" Failed to start server:", err);
