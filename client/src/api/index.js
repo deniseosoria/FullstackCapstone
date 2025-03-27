@@ -1,5 +1,5 @@
 /** API Link */
-export const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+export const API_URL = `https://evently-5cf6.onrender.com/api`;
 
 
 // ================================
