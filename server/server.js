@@ -29,11 +29,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://fullstackcapstone-1.onrender.com" 
+      "https://fullstackcapstone-1.onrender.com"
     ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true  
+    credentials: true,
   })
 );
 
