@@ -214,7 +214,7 @@ export async function fetchEventById(eventId) {
       throw new Error(result.message || "Failed to fetch event.");
     }
 
-    return result; 
+    return result;
   } catch (err) {
     return { error: err.message };
   }
@@ -234,16 +234,14 @@ export async function fetchUserEvents(userId) {
   }
 }
 
-
-
 export async function fetchCreateEvent(formData, token) {
   try {
     const response = await fetch(`${API_URL}/events/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
       },
-      body: formData, 
+      body: formData,
     });
 
     const result = await response.json();
@@ -261,8 +259,6 @@ export async function fetchCreateEvent(formData, token) {
   }
 }
 
-
-
 export async function fetchUpdateEvent(eventId, formData, token) {
   const response = await fetch(`${API_URL}/events/${eventId}`, {
     method: "PATCH",
@@ -277,13 +273,9 @@ export async function fetchUpdateEvent(eventId, formData, token) {
   if (!response.ok) {
     throw new Error(data.details || data.error || "Failed to update event");
   }
-  
 
   return data.event;
 }
-
-
-
 
 export async function fetchDeleteEvent(eventId, token) {
   try {
@@ -306,8 +298,6 @@ export async function fetchDeleteEvent(eventId, token) {
   }
 }
 
-
-
 // ================================
 // Reviews fetch
 // ================================
@@ -324,7 +314,7 @@ export async function fetchEventReviews(eventId) {
       throw new Error(result.message || "Failed to fetch reviews.");
     }
 
-    return result; 
+    return result;
   } catch (err) {
     return { error: err.message };
   }
@@ -336,7 +326,7 @@ export async function fetchCreateReview(eventId, rating, textReview, token) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, 
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ rating, text_review: textReview }),
     });
@@ -513,22 +503,25 @@ export async function fetchFavorite(eventId, token) {
     return { error: err.message };
   }
 }
+
 export async function fetchUserFavorites(token) {
   try {
-    const response = await fetch(`/api/favorites/`, {
+    const response = await fetch(`${API_URL}/api/favorites/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
+    const result = await response.json();
+
     if (!response.ok) {
-      throw new Error("Failed to fetch favorites");
+      throw new Error(result.message || "Failed to fetch user favorites.");
     }
 
-    return await response.json();
+    return result; // Expected array of bookings
   } catch (err) {
-    return [];
+    return { error: err.message };
   }
 }
 
