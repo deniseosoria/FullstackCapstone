@@ -4,7 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const upload = require("../middleware/upload");
+const upload = require("../middleware/cloudinaryUpload");
 
 const { requireUser } = require("./utils");
 const {
