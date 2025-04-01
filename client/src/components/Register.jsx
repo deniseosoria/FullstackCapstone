@@ -29,8 +29,7 @@ const Register = ({ setToken }) => {
         setToken(registerData.token); // Update App.js state
         setLocalToken(registerData.token); // Store locally for the Link button
         localStorage.setItem("token", registerData.token); // Persist login
-        navigate("/users/account"); // Auto-redirect to Account page
-        window.location.reload(); // Refresh page to update navigation
+        navigate("/");
       } else {
         throw new Error("Registration failed. Please try again.");
       }
