@@ -2,7 +2,7 @@
 import React from "react";
 import "../EventCard.css";
 
-const IMAGE_BASE_URL = "http://localhost:3001/uploads/";
+const IMAGE_BASE_URL = `${import.meta.env.VITE_API_URL}/uploads/`;
 
 const EventCard = ({
   event,

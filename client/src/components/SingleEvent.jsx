@@ -164,7 +164,7 @@ const SingleEvent = ({ token }) => {
     : null;
 
   const imageUrl = event.picture?.trim()
-    ? `http://localhost:3001/uploads/${event.picture}`
+    ? `${import.meta.env.VITE_API_URL}/uploads/${event.picture}`
     : "https://placehold.co/150x220/zzz/000?text=NoImage";
 
   return (

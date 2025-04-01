@@ -35,7 +35,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
       setFormData(formattedData);
 
       if (initialData.picture) {
-        setPreviewImage(`http://localhost:3001/uploads/${initialData.picture}`);
+        setPreviewImage(`${import.meta.env.VITE_API_URL}/uploads/${initialData.picture}`);
       }
     }
   }, [initialData]);
@@ -205,7 +205,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
             src={
               previewImage
                 ? previewImage
-                : `http://localhost:3001/uploads/${initialData.picture}`
+                : `${import.meta.env.VITE_API_URL}/uploads/${initialData.picture}`
             }
             alt="Event"
             className="event-image"
