@@ -506,7 +506,7 @@ export async function fetchFavorite(eventId, token) {
 
 export async function fetchUserFavorites(token) {
   try {
-    const response = await fetch(`${API_URL}/api/favorites/`, {
+    const response = await fetch(`${API_URL}/favorites/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
