@@ -1,6 +1,3 @@
-//server/middleware/cloudinaryUpload.js
-const multer = require("multer");
-
 // server/middleware/cloudinaryUpload.js
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
