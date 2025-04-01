@@ -12,7 +12,13 @@ const SALT_ROUNDS = 10;
 // DATABASE CONNECTION (PostgreSQL)
 // ==============================
 
-const client = new pg.Client(process.env.DATABASE_URL || "postgresql://acme_events_db_user:f8TLUNoKTI7isQ1fFkJM6nTYdZXDOjJi@dpg-cvhjmvdrie7s73e7ebe0-a/acme_events_db");
+const client = new pg.Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
 
 /**
  * USER Methods
