@@ -61,7 +61,9 @@ const Events = () => {
     if (isNaN(hours) || isNaN(minutes)) return formattedDate;
     const hours12 = hours % 12 || 12;
     const amPm = hours >= 12 ? "PM" : "AM";
-    return `${formattedDate} ${hours12}:${minutes.toString().padStart(2, "0")} ${amPm}`;
+    return `${formattedDate} ${hours12}:${minutes
+      .toString()
+      .padStart(2, "0")} ${amPm}`;
   };
 
   const filteredEvents = events
@@ -69,7 +71,9 @@ const Events = () => {
       event.event_name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((event) =>
-      cityFilter ? event.address.toLowerCase().includes(cityFilter.toLowerCase()) : true
+      cityFilter
+        ? event.address.toLowerCase().includes(cityFilter.toLowerCase())
+        : true
     )
     .filter((event) =>
       categoryFilter ? event.event_type === categoryFilter : true
@@ -141,38 +145,43 @@ const Events = () => {
       ) : (
         <div className="events-grid">
           {filteredEvents.map((event) => (
-            <Link className="event-card" key={event.id} to={`/event/${event.id}`}>
-            <img
-              src={
-                event.picture?.trim()
-                  ? `${import.meta.env.VITE_API_URL}/uploads/${event.picture}`
-                  : "https://placehold.co/150x220/zzz/000?text=NoImage"
-              }
-              onError={(e) =>
-                (e.currentTarget.src =
-                  "https://placehold.co/150x220/zzz/000?text=NoImage")
-              }
-              alt={event.event_name || "Event Image"}
-            />
-            <div className="event-info">
-              <h3>{event.event_name || "Unknown Event"}</h3>
-              <p>{formatEventDate(event.date, event.start_time)}</p>
-              <p>
-                {event.price !== null && event.price !== undefined
-                  ? event.price === 0
-                    ? "Free"
-                    : `$${event.price}`
-                  : "Price Unavailable"}
-              </p>
-              {reviewsMap[event.id]?.average && (
+            <Link
+              className="event-card"
+              key={event.id}
+              to={`/event/${event.id}`}
+            >
+              <img
+                src={
+                  event.picture?.startsWith("http")
+                    ? event.picture
+                    : "https://placehold.co/150x220/zzz/000?text=NoImage"
+                }
+                onError={(e) =>
+                  (e.currentTarget.src =
+                    "https://placehold.co/150x220/zzz/000?text=NoImage")
+                }
+                alt={event.event_name || "Event Image"}
+              />
+
+              <div className="event-info">
+                <h3>{event.event_name || "Unknown Event"}</h3>
+                <p>{formatEventDate(event.date, event.start_time)}</p>
                 <p>
-                  ⭐ {reviewsMap[event.id].average} ({reviewsMap[event.id].count} review
-                  {reviewsMap[event.id].count !== 1 ? "s" : ""})
+                  {event.price !== null && event.price !== undefined
+                    ? event.price === 0
+                      ? "Free"
+                      : `$${event.price}`
+                    : "Price Unavailable"}
                 </p>
-              )}
-            </div>
-          </Link>
-          
+                {reviewsMap[event.id]?.average && (
+                  <p>
+                    ⭐ {reviewsMap[event.id].average} (
+                    {reviewsMap[event.id].count} review
+                    {reviewsMap[event.id].count !== 1 ? "s" : ""})
+                  </p>
+                )}
+              </div>
+            </Link>
           ))}
         </div>
       )}

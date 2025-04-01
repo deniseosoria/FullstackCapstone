@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../EventForm.css"
+import "../EventForm.css";
 
 const EventForm = ({ onSubmit, initialData = {} }) => {
   const [formData, setFormData] = useState({
@@ -34,8 +34,8 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
 
       setFormData(formattedData);
 
-      if (initialData.picture) {
-        setPreviewImage(`${import.meta.env.VITE_API_URL}/uploads/${initialData.picture}`);
+      if (initialData.picture && initialData.picture.startsWith("http")) {
+        setPreviewImage(initialData.picture);
       }
     }
   }, [initialData]);
@@ -72,7 +72,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
       if (formData[key] !== null && formData[key] !== undefined) {
         data.append(key, formData[key]);
       }
-    });  
+    });
 
     await onSubmit(data);
     setPreviewImage(null);
@@ -201,15 +201,7 @@ const EventForm = ({ onSubmit, initialData = {} }) => {
 
       {(previewImage || initialData.picture) && (
         <div className="event-image-preview">
-          <img
-            src={
-              previewImage
-                ? previewImage
-                : `${import.meta.env.VITE_API_URL}/uploads/${initialData.picture}`
-            }
-            alt="Event"
-            className="event-image"
-          />
+          <img src={previewImage} alt="Event" className="event-image" />
         </div>
       )}
 

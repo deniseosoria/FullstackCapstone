@@ -203,7 +203,7 @@ const SingleEvent = ({ token }) => {
 
       {!token && (
         <p style={{ marginTop: "1rem", color: "#555" }}>
-          Please <Link to="/login">log in</Link> to favorite, book, or leave a
+          Please <Link to="/users/login">log in</Link> to favorite, book, or leave a
           review.
         </p>
       )}
