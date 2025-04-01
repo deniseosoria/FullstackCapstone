@@ -50,7 +50,12 @@ const SingleEvent = ({ token }) => {
           const matchedFavorite = userFavorites.find(
             (fav) => String(fav.id) === String(eventData.id)
           );
-          setIsFavorited(!!matchedFavorite);
+          // setIsFavorited(!!matchedFavorite);
+          setIsFavorited(
+            userFavorites.some(
+              (favorite) => favorite.event_name === eventData.event_name
+            )
+          );
 
           setIsBooked(
             userBookings.some(
