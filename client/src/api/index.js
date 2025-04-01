@@ -222,7 +222,7 @@ export async function fetchEventById(eventId) {
 
 export async function fetchUserEvents(userId) {
   try {
-    const response = await fetch(`/api/events/user/${userId}`, {
+    const response = await fetch(`${API_URL}/events/user/${userId}`, {
       method: "GET",
     });
 
