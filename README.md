@@ -1,4 +1,5 @@
 # Evently
+Delployed url: https://fullstackcapstone-1.onrender.com
 
 **Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Evently helps people find exciting events and experiences in different cities.
 
@@ -107,14 +108,25 @@ evently/
 
 - Add event categories and tags
 - Google Maps integration
-- User messaging or Q&A under events
 - Stripe or PayPal integration for paid events
 - Notifications (email or in-app)
 - Admin dashboard
 
+## Video Demo
+https://www.youtube.com/watch?v=VF_X1pjiIWM
+
 ## Screenshots
 
-_Coming soon..._
+- **Homepage**:
+![Homepage](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131525.png)
 
+- **Create Event Page**:
+![Create Event Page](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131547.png)
+
+- **Account Page**:
+![Account Page](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131620.png)
+
+- **Event Details**:
+![Event Details](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131725.png)
 
 Made with ❤️ for event lovers everywhere.
