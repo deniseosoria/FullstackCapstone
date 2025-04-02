@@ -1,8 +1,5 @@
-// src/components/EventCard.jsx
 import React from "react";
 import "../EventCard.css";
-
-const IMAGE_BASE_URL = `${import.meta.env.VITE_API_URL}/uploads/`;
 
 const EventCard = ({
   event,
@@ -27,8 +24,9 @@ const EventCard = ({
     ).padStart(2, "0")} ${ampm}`;
   };
 
-  const imageUrl = event.picture?.trim()
-    ? `${IMAGE_BASE_URL}${event.picture}`
+  // ✅ Check if picture is a full URL (Cloudinary)
+  const imageUrl = event.picture?.startsWith("http")
+    ? event.picture
     : "https://placehold.co/150x220/zzz/000?text=No+Image";
 
   return (
@@ -66,3 +64,4 @@ const EventCard = ({
 };
 
 export default EventCard;
+

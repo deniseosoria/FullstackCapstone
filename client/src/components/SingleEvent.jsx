@@ -163,8 +163,8 @@ const SingleEvent = ({ token }) => {
       )
     : null;
 
-  const imageUrl = event.picture?.trim()
-    ? `${import.meta.env.VITE_API_URL}/uploads/${event.picture}`
+  const imageUrl = event.picture?.startsWith("http")
+    ? event.picture
     : "https://placehold.co/150x220/zzz/000?text=NoImage";
 
   return (
@@ -203,8 +203,8 @@ const SingleEvent = ({ token }) => {
 
       {!token && (
         <p style={{ marginTop: "1rem", color: "#555" }}>
-          Please <Link to="/users/login">log in</Link> to favorite, book, or leave a
-          review.
+          Please <Link to="/users/login">log in</Link> to favorite, book, or
+          leave a review.
         </p>
       )}
 
