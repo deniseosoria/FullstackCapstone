@@ -173,7 +173,6 @@ async function createInitialEvents() {
         date: "2025-04-15",
         start_time: "10:00",
         end_time: "13:00",
-        picture: "/uploads/tech-brunch.jpg",
       },
       {
         user_id: alice.id,
@@ -186,7 +185,6 @@ async function createInitialEvents() {
         date: "2025-04-20",
         start_time: "07:00",
         end_time: "08:30",
-        picture: "/uploads/yoga-park.jpg",
       },
       {
         user_id: alice.id,
@@ -199,7 +197,6 @@ async function createInitialEvents() {
         date: "2025-05-10",
         start_time: "09:00",
         end_time: "16:00",
-        picture: "/uploads/coding-bootcamp.jpg",
       },
       {
         user_id: bob.id,
@@ -212,7 +209,6 @@ async function createInitialEvents() {
         date: "2025-04-25",
         start_time: "18:00",
         end_time: "21:00",
-        picture: "/uploads/art-wine.jpg",
       },
       {
         user_id: bob.id,
@@ -225,7 +221,6 @@ async function createInitialEvents() {
         date: "2025-05-01",
         start_time: "20:00",
         end_time: "23:00",
-        picture: "/uploads/jazz-night.jpg",
       },
       {
         user_id: bob.id,
@@ -238,7 +233,6 @@ async function createInitialEvents() {
         date: "2025-05-15",
         start_time: "14:00",
         end_time: "18:00",
-        picture: "/uploads/startup-pitch.jpg",
       },
       {
         user_id: bob.id,
@@ -251,7 +245,6 @@ async function createInitialEvents() {
         date: "2025-05-20",
         start_time: "12:00",
         end_time: "20:00",
-        picture: "/uploads/food-festival.jpg",
       },
       {
         user_id: charlie.id,
@@ -264,7 +257,6 @@ async function createInitialEvents() {
         date: "2025-06-05",
         start_time: "15:00",
         end_time: "18:00",
-        picture: "/uploads/photo-walk.jpg",
       },
       {
         user_id: charlie.id,
@@ -277,7 +269,6 @@ async function createInitialEvents() {
         date: "2025-06-15",
         start_time: "08:00",
         end_time: "17:00",
-        picture: "/uploads/wellness-retreat.jpg",
       },
       {
         user_id: charlie.id,
@@ -290,7 +281,6 @@ async function createInitialEvents() {
         date: "2025-06-25",
         start_time: "20:00",
         end_time: "22:30",
-        picture: "/uploads/movie-night.jpg",
       },
     ];
 

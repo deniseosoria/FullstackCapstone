@@ -38,7 +38,7 @@
 - Node.js
 - Express
 - PostgreSQL
-- Multer (for image uploads)
+- Cloudinary (for image uploads)
 
 **Authentication:**
 - JSON Web Tokens (JWT)
@@ -99,7 +99,6 @@ evently/
 │   ├── models/
 │   ├── routes/
 │   └── middleware/
-├── uploads/         # Uploaded images
 ├── .env
 └── README.md
 ```

@@ -37,7 +37,7 @@ app.use(
 
 
 //  Serve Uploaded Files
-app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 
 //  Mount API Routes
 const api = require("./api/index.js");

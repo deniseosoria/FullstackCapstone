@@ -2,11 +2,19 @@ const express = require("express");
 const usersRouter = express.Router();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const path = require("path");
 const bcrypt = require("bcrypt");
 
 const { requireUser } = require("./utils");
+
+const cloudinary = require("cloudinary").v2;
+const upload = require("../middleware/cloudinaryUpload");
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const {
   createUser,
@@ -16,22 +24,6 @@ const {
   updateUser,
   deleteUser,
 } = require("../db/db");
-
-//  Configure multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files in the 'uploads' folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Rename file
-  },
-});
-
-//  Middleware to handle image uploads
-const upload = multer({ storage });
-
-//  Serve uploaded images as static files
-usersRouter.use("/uploads", express.static("uploads"));
 
 usersRouter.get("/", async (req, res, next) => {
   try {
@@ -148,7 +140,8 @@ usersRouter.patch(
       if (password) updateFields.password = await bcrypt.hash(password, 10); //  Hash new password
       if (name) updateFields.name = name;
       if (location) updateFields.location = location;
-      if (req.file) updateFields.picture = `/uploads/${req.file.filename}`; //  Store image path
+      if (req.file) updateFields.picture = req.file.path; // Cloudinary URL
+
 
       const updatedUser = await updateUser(user_id, updateFields);
 
@@ -169,11 +162,9 @@ usersRouter.delete("/:user_id", requireUser, async (req, res, next) => {
 
     // Ensure the user can only delete their own account
     if (req.user.id !== user_id) {
-      return res
-        .status(403)
-        .json({
-          message: "You are not allowed to delete another user's account.",
-        });
+      return res.status(403).json({
+        message: "You are not allowed to delete another user's account.",
+      });
     }
 
     const deletedUser = await deleteUser(user_id);

@@ -2,6 +2,8 @@ const express = require("express");
 const eventsRouter = express.Router();
 
 const cloudinary = require("cloudinary").v2;
+const upload = require("../middleware/cloudinaryUpload");
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
