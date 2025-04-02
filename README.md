@@ -118,15 +118,15 @@ https://www.youtube.com/watch?v=VF_X1pjiIWM
 ## Screenshots
 
 - **Homepage**:
-![Homepage](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131525.png)
+![Homepage](./client/src/assets/imgs/Screenshot%202025-04-02%20131525.png)
 
 - **Create Event Page**:
-![Create Event Page](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131547.png)
+![Create Event Page](./client/src/assets/imgs/Screenshot%202025-04-02%20131547.png)
 
 - **Account Page**:
-![Account Page](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131620.png)
+![Account Page](./client/src/assets/imgs/Screenshot%202025-04-02%20131620.png)
 
 - **Event Details**:
-![Event Details](/FullstackCapstone/client/src/assets/imgs/Screenshot%202025-04-02%20131725.png)
+![Event Details](./client/src/assets/imgs/Screenshot%202025-04-02%20131725.png)
 
 Made with ❤️ for event lovers everywhere.
