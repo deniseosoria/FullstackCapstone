@@ -1,10 +1,14 @@
 const express = require("express");
 const eventsRouter = express.Router();
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
-const upload = require("../middleware/cloudinaryUpload");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 
 const { requireUser } = require("./utils");
 const {
@@ -15,18 +19,6 @@ const {
   getUserEvents,
   deleteEvent,
 } = require("../db/db");
-
-// Multer config for image upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, unique);
-  },
-});
 
 /* ========= ROUTES ========= */
 
@@ -81,7 +73,7 @@ eventsRouter.post(
         end_time,
       } = req.body;
 
-      const picture = req.file ? req.file.filename : null;
+      const picture = req.file ? req.file.path : null; //  Cloudinary URL
 
       const event = await createEvent({
         event_name,
@@ -122,6 +114,9 @@ eventsRouter.patch(
         return res.status(403).send({ error: "Unauthorized" });
       }
 
+      // 🔍 DEBUG IMAGE UPLOAD
+      console.log("📷 Uploaded file (req.file):", req.file);
+
       const {
         event_name,
         description,
@@ -147,26 +142,14 @@ eventsRouter.patch(
       if (end_time) updateFields.end_time = end_time;
 
       if (req.file) {
-        if (existingEvent.picture) {
-          const oldPath = path.join(
-            __dirname,
-            "../uploads",
-            existingEvent.picture
-          );
-          if (fs.existsSync(oldPath)) {
-            fs.unlinkSync(oldPath);
-          }
-        }
-        updateFields.picture = req.file.filename;
+        updateFields.picture = req.file.path; //  Cloudinary URL
       }
 
       const updatedEvent = await updateEvent(eventId, updateFields);
       res.send({ event: updatedEvent });
     } catch (err) {
-      res
-        .status(500)
-        .send({ error: "Internal Server Error", details: err.message });
-
+      console.error("❌ PATCH /api/events error:", err.message);
+      res.status(500).send({ error: "Internal Server Error", details: err.message });
       next(err);
     }
   }
@@ -178,22 +161,24 @@ eventsRouter.delete("/:event_id", requireUser, async (req, res, next) => {
     const { event_id } = req.params;
     const { id: user_id } = req.user;
 
-    // First, fetch the event to check ownership and access picture filename
+    // First, fetch the event to check ownership and image
     const event = await getEventById(event_id);
 
     if (!event || event.user_id !== user_id) {
       return res.status(403).send({ error: "Not authorized or event not found." });
     }
 
-    // Delete the image file if it exists
-    if (event.picture) {
-      const imagePath = path.join(__dirname, "../uploads", event.picture);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
+    // 🌩️ Delete the image from Cloudinary (if exists)
+    if (event.picture && event.picture.includes("res.cloudinary.com")) {
+      const segments = event.picture.split("/");
+      const filenameWithExt = segments.pop().split(".")[0]; // removes extension
+      const folder = segments.slice(segments.indexOf("upload") + 1).join("/");
+      const publicId = `${folder}/${filenameWithExt}`;
+
+      await cloudinary.uploader.destroy(publicId); // Deletes from Cloudinary
     }
 
-    // Delete the event from the database
+    // Delete event from DB
     const deletedEvent = await deleteEvent(event_id, user_id);
 
     if (deletedEvent) {
