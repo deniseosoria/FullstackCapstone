@@ -36,8 +36,7 @@ Delployed url: https://fullstackcapstone-1.onrender.com
 **Frontend:**
 - React
 - React Router
-- Axios
-- Tailwind CSS
+- CSS
 
 **Backend:**
 - Node.js
@@ -141,4 +140,4 @@ https://www.youtube.com/watch?v=VF_X1pjiIWM
 - **Event Details**:
 ![Event Details](./client/src/assets/imgs/Screenshot%202025-04-02%20131725.png)
 
-Made with ❤️ for event lovers everywhere.
+
