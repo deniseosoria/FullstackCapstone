@@ -1,62 +1,69 @@
 # Evently
 Delployed url: https://fullstackcapstone-1.onrender.com
 
-**Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its design and **Eventbrite** for functionality, Evently helps people find exciting events and experiences in different cities.
+# Evently
+
+**Evently** is a full-stack event planning web application where users can create, browse, favorite, and book unique events. Inspired by **Airbnb Experiences** for its aesthetic and **Eventbrite** for functionality, Evently helps people find and host unforgettable events.
 
 ## Features
 
 ### 🌟 User-Focused Features
-- **Authentication**: Secure login and registration
-- **Browse Events**: View all events with filters for city, category, and search by name
-- **Sort Events**: Sort by date or price
-- **Event Details**: View full details, average ratings, and reviews
-- **Book Events**: Easily book your favorite experiences
-- **Favorite Events**: Save events to your personal favorites list
-- **Leave Reviews**: Rate and review events you’ve attended
+- **Authentication**: Secure user registration and login
+- **Browse Events**: Discover all events with search, city, and category filters
+- **Sort Events**: Organize by date or price
+- **Event Details**: View full event information, reviews, and average ratings
+- **Book Events**: Reserve your spot with a single click
+- **Favorite Events**: Save experiences for later
+- **Leave Reviews**: Rate and review events you've attended
 
-### 👤 User Account
-- **Profile Management**: View and edit account information
-- **My Events**: Manage events you’ve created
-- **My Bookings**: View and cancel booked events
-- **My Favorites**: Manage favorited events
-- **Search & Sort Bookings**: Filter your bookings by date or event name
-- **Cancel & Delete**: Cancel bookings or remove from favorites
+### 👤 User Account Dashboard
+- **My Profile**: View and edit personal information
+- **My Events**: Manage created events
+- **My Bookings**: View, search, and cancel bookings
+- **My Favorites**: Manage saved events
+- **Dynamic Search**: Filter bookings and favorites by name or date
+- **Cancel & Remove**: Cancel bookings or delete favorites
 
 ### 🛠 Event Creator Tools
-- **Create Events**: Post new events with image upload
-- **Edit Events**: Update event details with a pre-filled form
-- **Delete Events**: Remove your events from the platform
-- **Responsive UI**: Clean and modern user interface inspired by Airbnb
+- **Create Events**: Add events with title, description, date, price, and image
+- **Image Uploads**: Upload event images using Cloudinary integration
+- **Edit Events**: Modify existing events with a pre-filled form
+- **Delete Events**: Remove events from the platform
+- **Responsive UI**: Clean and intuitive design for all devices
 
 ## Tech Stack
 
 **Frontend:**
 - React
 - React Router
-
+- Axios
+- Tailwind CSS
 
 **Backend:**
 - Node.js
 - Express
-- PostgreSQL
-- Cloudinary (for image uploads)
+- PostgreSQL (raw SQL)
 
 **Authentication:**
 - JSON Web Tokens (JWT)
 - bcrypt
+
+**Image Uploads:**
+- Cloudinary (via REST API)
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js and npm
 - PostgreSQL
+- Cloudinary Account
 
 ### Installation
 
 1. Clone the repo:
    ```bash
-   git clone git@github.com:deniseosoria/FullstackCapstone.git
-   cd FullstackCapstone
+   git clone https://github.com/your-username/evently.git
+   cd evently
    ```
 
 2. Install dependencies:
@@ -84,11 +91,13 @@ Delployed url: https://fullstackcapstone-1.onrender.com
 Create a `.env` file in the root directory with:
 
 ```env
-PORT=3001
+PORT=5000
 DATABASE_URL=postgres://username:password@localhost:5432/evently_db
 JWT_SECRET=your_jwt_secret
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
-
 
 ## Folder Structure
 
@@ -96,21 +105,24 @@ JWT_SECRET=your_jwt_secret
 evently/
 ├── client/          # React frontend
 ├── server/          # Express backend
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   └── middleware/
+│   ├── api/ (controllers and routes)
+│   ├── db/ (models)
+│   ├── utils/
+│   ├── utils/
+|   ├── middleware/
+|   └──server.js
 ├── .env
 └── README.md
 ```
 
 ## Future Improvements
 
-- Add event categories and tags
-- Google Maps integration
-- Stripe or PayPal integration for paid events
-- Notifications (email or in-app)
-- Admin dashboard
+- Add event tags
+- Google Maps or location services integration
+- Stripe or PayPal for paid events
+- Email or in-app notifications
+- Admin dashboard for moderation
+- User messaging or Q&A for events
 
 ## Video Demo
 https://www.youtube.com/watch?v=VF_X1pjiIWM
