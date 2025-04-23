@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchEvents, fetchEventReviews } from "../api/index";
 import "../Events.css";
 
-const Events = () => {
+const Events = ({ token }) => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,7 +103,6 @@ const Events = () => {
   return (
     <div className="events-page">
       <h2 className="page-title">Events</h2>
-
       <div className="filters">
         <input
           type="text"
@@ -145,10 +145,10 @@ const Events = () => {
       ) : (
         <div className="events-grid">
           {filteredEvents.map((event) => (
-            <Link
+            <div
               className="event-card"
               key={event.id}
-              to={`/event/${event.id}`}
+              onClick={() => navigate(`/event/${event.id}`, { state: { token } })}
             >
               <img
                 src={
@@ -181,7 +181,7 @@ const Events = () => {
                   </p>
                 )}
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

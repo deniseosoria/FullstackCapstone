@@ -42,7 +42,7 @@ function App() {
               path="/"
               element={
                 <>
-                  <Events />
+                  <Events token={token} />
                 </>
               }
             />

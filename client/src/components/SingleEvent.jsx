@@ -13,7 +13,7 @@ import {
 } from "../api";
 import "../SingleEvent.css";
 
-const SingleEvent = ({ token }) => {
+const SingleEvent = ({ token: propToken }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,6 +27,9 @@ const SingleEvent = ({ token }) => {
   const [isBooked, setIsBooked] = useState(false);
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(5);
+
+  // Get token from either props or location state
+  const token = propToken || location.state?.token;
 
   useEffect(() => {
     if (location.state?.from) {
@@ -47,10 +50,6 @@ const SingleEvent = ({ token }) => {
           const userFavorites = await fetchUserFavorites(token);
           const userBookings = await fetchUserBookings(token);
 
-          const matchedFavorite = userFavorites.find(
-            (fav) => String(fav.id) === String(eventData.id)
-          );
-          // setIsFavorited(!!matchedFavorite);
           setIsFavorited(
             userFavorites.some(
               (favorite) => favorite.event_name === eventData.event_name
