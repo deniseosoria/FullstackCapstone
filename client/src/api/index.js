@@ -63,10 +63,8 @@ export async function fetchRegister(formData) {
 // Users fetch
 // ================================
 
-export async function fetchUserAccount() {
+export async function fetchUserAccount(token) {
   try {
-    const token = localStorage.getItem("token"); // Retrieve token from storage
-
     if (!token) {
       throw new Error("No authentication token found. Please log in.");
     }
@@ -74,7 +72,7 @@ export async function fetchUserAccount() {
     const response = await fetch(`${API_URL}/users/account`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`, // Send token in header
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -85,9 +83,9 @@ export async function fetchUserAccount() {
     }
 
     const userData = await response.json();
-    return userData; // Return user data if needed elsewhere
+    return userData;
   } catch (error) {
-    return null; // Return null if there's an error
+    return null;
   }
 }
 

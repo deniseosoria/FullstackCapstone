@@ -33,18 +33,16 @@ const Account = ({ token }) => {
   const [formData, setFormData] = useState({ name: "", username: "" });
 
   useEffect(() => {
-    // Check if token exists in localStorage
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) {
-      navigate("/login");
+    if (!token) {
+      navigate("/users/login");
       return;
     }
 
     async function fetchUserData() {
       try {
-        const userData = await fetchUserAccount(storedToken);
+        const userData = await fetchUserAccount(token);
         if (!userData) {
-          navigate("/login");
+          navigate("/users/login");
           return;
         }
         setUser(userData);
@@ -55,23 +53,23 @@ const Account = ({ token }) => {
         const userEventsData = await fetchUserEvents(userData.id);
         setUserEvents(userEventsData);
 
-        const favorites = await fetchUserFavorites(storedToken);
+        const favorites = await fetchUserFavorites(token);
         setFavoriteEvents(favorites);
 
-        const bookings = await fetchUserBookings(storedToken);
+        const bookings = await fetchUserBookings(token);
         setBookedEvents(bookings);
       } catch (err) {
         setError("Error fetching account details.");
-        navigate("/login");
+        navigate("/users/login");
       }
     }
     fetchUserData();
-  }, [navigate]);
+  }, [token, navigate]);
 
   async function handleUserUpdate(e) {
     e.preventDefault();
     try {
-      const updateUserData = await fetchUpdateUser(formData, token);
+      const updateUserData = await fetchUpdateUser(user.id, formData, token);
       setUser(updateUserData);
       setSuccess("User updated successfully.");
       setEditUserForm(false);
@@ -82,11 +80,7 @@ const Account = ({ token }) => {
 
   async function handleCreateEvent(formData) {
     try {
-      const { event: createEventData } = await fetchCreateEvent(
-        formData,
-        token
-      );
-
+      const { event: createEventData } = await fetchCreateEvent(formData, token);
       setUserEvents((prev) => [...prev, createEventData]);
       setNewUserEvent(createEventData);
       setSuccess("Event created successfully.");
@@ -99,12 +93,10 @@ const Account = ({ token }) => {
   const handleEventUpdate = async (eventId, formData) => {
     try {
       const updated = await fetchUpdateEvent(eventId, formData, token);
-
       setUserEvents((prevEvents) =>
         prevEvents.map((event) => (event.id === eventId ? updated : event))
       );
-
-      setEditingEvent(null); // Hide form
+      setEditingEvent(null);
       setSuccess("Event updated successfully.");
     } catch (err) {
       setError("Failed to update event.");
@@ -113,21 +105,14 @@ const Account = ({ token }) => {
 
   async function handleRemoveEvent(eventId) {
     try {
-      const deleted = await fetchDeleteEvent(eventId, token);
-      console.log("Response from fetchDeleteEvent:", deleted);
-  
-      if (deleted?.event || deleted?.success) {
-        setUserEvents((prev) => prev.filter((event) => event.id !== eventId));
-        setSuccess("Event deleted successfully.");
-      } else {
-        throw new Error("Delete failed.");
-      }
+      await fetchDeleteEvent(eventId, token);
+      setUserEvents((prev) => prev.filter((event) => event.id !== eventId));
+      setSuccess("Event deleted successfully.");
     } catch (err) {
       setError("Failed to delete event.");
     }
   }
-  
-  
+
   async function handleCancelBooking(eventId) {
     try {
       await fetchCancelBooking(eventId, token);
