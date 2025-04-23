@@ -3,26 +3,30 @@ import { Link, useLocation } from "react-router-dom";
 import { fetchUserAccount } from "../api";
 import "../Navigation.css";
 
-const Navigations = () => {
+const Navigations = ({ token, setToken }) => {
   const [user, setUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
     async function getUser() {
-      const data = await fetchUserAccount();
+      if (!token) {
+        setUser(null);
+        return;
+      }
+      const data = await fetchUserAccount(token);
       if (data) {
         setUser(data);
       } else {
         setUser(null);
+        setToken(null); // Clear token if user data fetch fails
       }
     }
 
     getUser();
-  }, [location]);
+  }, [token, location, setToken]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
+    setToken(null); // This will trigger the handleSetToken in App.jsx
     setUser(null);
     window.location.href = "/";
   };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Navigation from "./components/Navigations";
 import Events from "./components/Events";
@@ -12,7 +12,11 @@ import CreateEventPage from "./components/CreateEventPage.jsx";
 import "./App.css";
 
 function App() {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [token, setToken] = useState(() => {
+    // Get token from localStorage on initial load
+    const storedToken = localStorage.getItem("token");
+    return storedToken || null;
+  });
 
   // Function to handle setting & persisting the token
   const handleSetToken = (newToken) => {
@@ -25,6 +29,14 @@ function App() {
     }
   };
 
+  // Verify token on app load
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+    }
+  }, []);
+
   return (
     <>
       <div className="app">
@@ -33,7 +45,7 @@ function App() {
             <Link to="/">Evently</Link>
           </h1>
           <nav>
-            <Navigation />
+            <Navigation token={token} setToken={handleSetToken} />
           </nav>
         </header>
         <div>
