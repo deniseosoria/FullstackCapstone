@@ -103,6 +103,7 @@ const Events = ({ token }) => {
   return (
     <div className="events-page">
       <h2 className="page-title">Events</h2>
+
       <div className="filters">
         <input
           type="text"
