@@ -33,9 +33,20 @@ const Account = ({ token }) => {
   const [formData, setFormData] = useState({ name: "", username: "" });
 
   useEffect(() => {
+    // Check if token exists in localStorage
+    const storedToken = localStorage.getItem("token");
+    if (!storedToken) {
+      navigate("/login");
+      return;
+    }
+
     async function fetchUserData() {
       try {
-        const userData = await fetchUserAccount(token);
+        const userData = await fetchUserAccount(storedToken);
+        if (!userData) {
+          navigate("/login");
+          return;
+        }
         setUser(userData);
         setFormData({ name: userData.name, username: userData.username });
 
@@ -44,17 +55,18 @@ const Account = ({ token }) => {
         const userEventsData = await fetchUserEvents(userData.id);
         setUserEvents(userEventsData);
 
-        const favorites = await fetchUserFavorites(token);
+        const favorites = await fetchUserFavorites(storedToken);
         setFavoriteEvents(favorites);
 
-        const bookings = await fetchUserBookings(token);
+        const bookings = await fetchUserBookings(storedToken);
         setBookedEvents(bookings);
       } catch (err) {
         setError("Error fetching account details.");
+        navigate("/login");
       }
     }
     fetchUserData();
-  }, [token]);
+  }, [navigate]);
 
   async function handleUserUpdate(e) {
     e.preventDefault();
