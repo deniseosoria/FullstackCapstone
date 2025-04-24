@@ -56,7 +56,6 @@ app.get("/", (req, res) => {
 //   express.static(path.join(__dirname, "../client/dist/assets"))
 //);
 
-
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err.stack || err.message || err);
   res.status(err.status || 500).send({
