@@ -77,6 +77,7 @@ function App() {
               path="/favorite-events"
               element={<FavoriteEvents token={token} />}
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </div>
