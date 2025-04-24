@@ -46,15 +46,19 @@ app.get("/", (req, res) => {
   res.send("✅ Backend is live!");
 });
 
+// =================== SPA Fallback for Production ===================
+if (process.env.NODE_ENV === "production") {
+  const clientPath = path.join(__dirname, "../client/dist");
 
-//  Serve Frontend (for production builds if using Vite or similar)
-// app.get("/", (req, res) =>
-//   res.sendFile(path.join(__dirname, "../client/dist/index.html"))
-// );
-// app.use(
-//   "/assets",
-//   express.static(path.join(__dirname, "../client/dist/assets"))
-//);
+  // Serve static files from the client build
+  app.use(express.static(clientPath));
+
+  // SPA fallback to index.html
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+  });
+}
+// ==================================================================
 
 app.use((err, req, res, next) => {
   console.error("🔥 Global Error Handler:", err.stack || err.message || err);
