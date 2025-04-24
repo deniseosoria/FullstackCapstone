@@ -10,5 +10,15 @@ export default defineConfig({
     proxy: {
       '/api': `http://localhost:${serverPort}`
     }
+  },
+  base: '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 })
