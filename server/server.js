@@ -29,7 +29,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://eventbookie.netlify.app/"
+      "https://eventbookie.netlify.app"
     ],
     credentials: true,
   })
