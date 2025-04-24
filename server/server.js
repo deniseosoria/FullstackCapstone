@@ -35,7 +35,6 @@ app.use(
   })
 );
 
-
 //  Serve Uploaded Files
 // app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 
@@ -66,11 +65,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-
 //  Start the Server
 const init = async () => {
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 10000;
   try {
     await client.connect();
     app.listen(port, () => {
