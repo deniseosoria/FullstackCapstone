@@ -12,13 +12,25 @@ const SALT_ROUNDS = 10;
 // DATABASE CONNECTION (PostgreSQL)
 // ==============================
 
-const client = new pg.Client({
+const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false,
   },
+  // Add some sensible pool configuration
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
 });
 
+// The pool will emit an error on behalf of any idle clients
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
+
+// Export the query method directly to simplify our code
+const query = (text, params) => pool.query(text, params);
 
 /**
  * USER Methods
@@ -34,7 +46,7 @@ async function createUser({ name, username, password, location, picture }) {
 
     const {
       rows: [user],
-    } = await client.query(
+    } = await query(
       `INSERT INTO users (name, username, password, location, picture)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *;`,
@@ -57,7 +69,7 @@ async function updateUser(id, fields = {}) {
   try {
     const {
       rows: [user],
-    } = await client.query(
+    } = await query(
       `UPDATE users SET ${setString} WHERE id=$${
         Object.keys(fields).length + 1
       } RETURNING *;`,
@@ -72,7 +84,7 @@ async function updateUser(id, fields = {}) {
 
 async function getAllUsers() {
   try {
-    const { rows } = await client.query(
+    const { rows } = await query(
       `SELECT id, name, username, location FROM users;`
     );
     return rows;
@@ -83,7 +95,7 @@ async function getAllUsers() {
 
 const getUserByUsername = async (username) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "SELECT * FROM users WHERE username = $1",
       [username]
     );
@@ -95,7 +107,7 @@ const getUserByUsername = async (username) => {
 
 const getUserById = async (id) => {
   try {
-    const { rows } = await client.query("SELECT * FROM users WHERE id = $1", [
+    const { rows } = await query("SELECT * FROM users WHERE id = $1", [
       id,
     ]);
     return rows[0];
@@ -109,7 +121,7 @@ async function deleteUser(user_id) {
     // Delete user and cascade delete any related data (bookings, events, etc.)
     const {
       rows: [deletedUser],
-    } = await client.query(`DELETE FROM users WHERE id = $1 RETURNING *;`, [
+    } = await query(`DELETE FROM users WHERE id = $1 RETURNING *;`, [
       user_id,
     ]);
 
@@ -138,7 +150,7 @@ async function createEvent({
   try {
     const {
       rows: [event],
-    } = await client.query(
+    } = await query(
       `INSERT INTO events (user_id, event_name, description, event_type, address, price, capacity, date, start_time, end_time, picture)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *;`,
@@ -192,7 +204,7 @@ async function updateEvent(event_id, fields = {}) {
   try {
     const {
       rows: [event],
-    } = await client.query(
+    } = await query(
       `UPDATE events SET ${setString} WHERE id = $${values.length} RETURNING *;`,
       values
     );
@@ -206,7 +218,7 @@ async function updateEvent(event_id, fields = {}) {
 
 const getAllEvents = async (limit = 10, offset = 0) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "SELECT * FROM events ORDER BY date ASC LIMIT $1 OFFSET $2",
       [limit, offset]
     );
@@ -218,7 +230,7 @@ const getAllEvents = async (limit = 10, offset = 0) => {
 
 const getEventById = async (id) => {
   try {
-    const result = await client.query("SELECT * FROM events WHERE id = $1", [
+    const result = await query("SELECT * FROM events WHERE id = $1", [
       id,
     ]);
     return result.rows[0];
@@ -229,7 +241,7 @@ const getEventById = async (id) => {
 
 async function getUserEvents(user_id) {
   try {
-    const result = await client.query(
+    const result = await query(
       `SELECT * FROM events WHERE user_id = $1 ORDER BY date ASC`,
       [user_id]
     );
@@ -243,7 +255,7 @@ const deleteEvent = async (id, user_id) => {
   try {
     const {
       rows: [event],
-    } = await client.query(
+    } = await query(
       `DELETE FROM events WHERE id = $1 AND user_id = $2 RETURNING *;`,
       [id, user_id]
     );
@@ -259,7 +271,7 @@ const deleteEvent = async (id, user_id) => {
  */
 const bookEvent = async (user_id, event_id) => {
   try {
-    const { rows } = await client.query(
+    const { rows } = await query(
       "INSERT INTO bookings (user_id, event_id) VALUES ($1, $2) RETURNING *",
       [user_id, event_id]
     );
@@ -273,7 +285,7 @@ const bookEvent = async (user_id, event_id) => {
 // Get user's booked events
 async function getUserBookings(user_id) {
   try {
-    const result = await client.query(
+    const result = await query(
       `
       SELECT events.*
       FROM bookings
@@ -291,7 +303,7 @@ async function getUserBookings(user_id) {
 // Cancel a booking
 const cancelBooking = async (userId, eventId) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "DELETE FROM bookings WHERE user_id = $1 AND event_id = $2 RETURNING *",
       [userId, eventId]
     );
@@ -306,7 +318,7 @@ const cancelBooking = async (userId, eventId) => {
  */
 const addReview = async (userId, event_id, rating, text_review) => {
   try {
-    const { rows } = await client.query(
+    const { rows } = await query(
       "INSERT INTO reviews (user_id, event_id, rating, text_review) VALUES ($1, $2, $3, $4) RETURNING *",
       [userId, event_id, rating, text_review]
     );
@@ -319,7 +331,7 @@ const addReview = async (userId, event_id, rating, text_review) => {
 // Get reviews for an event
 const getEventReviews = async (event_id) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "SELECT * FROM reviews WHERE event_id = $1",
       [event_id]
     );
@@ -339,7 +351,7 @@ const editReview = async (userId, event_id, fields = {}) => {
   try {
     const {
       rows: [review],
-    } = await client.query(
+    } = await query(
       `UPDATE reviews SET ${setString} WHERE user_id=$${
         Object.keys(fields).length + 1
       } 
@@ -356,7 +368,7 @@ const editReview = async (userId, event_id, fields = {}) => {
 // Delete a review
 const deleteReview = async (reviewId, userId) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "DELETE FROM reviews WHERE id = $1 AND user_id = $2 RETURNING *",
       [reviewId, userId]
     );
@@ -371,7 +383,7 @@ const deleteReview = async (reviewId, userId) => {
  */
 const addFavorite = async ({ user_id, event_id }) => {
   try {
-    const { rows } = await client.query(
+    const { rows } = await query(
       `INSERT INTO favorites (user_id, event_id) VALUES ($1, $2) RETURNING *;`,
       [user_id, event_id] // Ensure these are raw UUID strings
     );
@@ -383,7 +395,7 @@ const addFavorite = async ({ user_id, event_id }) => {
 
 async function getUserFavorites(user_id) {
   try {
-    const result = await client.query(
+    const result = await query(
       `
       SELECT events.*
       FROM favorites
@@ -401,7 +413,7 @@ async function getUserFavorites(user_id) {
 // Remove an event from favorites
 const removeFavorite = async (userId, eventId) => {
   try {
-    const result = await client.query(
+    const result = await query(
       "DELETE FROM favorites WHERE user_id = $1 AND event_id = $2 RETURNING *",
       [userId, eventId]
     );
@@ -412,7 +424,8 @@ const removeFavorite = async (userId, eventId) => {
 };
 
 module.exports = {
-  client,
+  pool,
+  query,
   createUser,
   updateUser,
   getAllUsers,

@@ -1,5 +1,6 @@
 const {
-  client,
+  pool,
+  query,
   createUser,
   getAllUsers,
   createEvent,
@@ -9,7 +10,7 @@ const {
 async function dropTables() {
   try {
     console.log("🔸 Dropping existing tables...");
-    await client.query(`
+    await query(`
       DROP TABLE IF EXISTS favorites CASCADE;
       DROP TABLE IF EXISTS reviews CASCADE;
       DROP TABLE IF EXISTS bookings CASCADE;
@@ -27,7 +28,7 @@ async function dropTables() {
 async function createTables() {
   try {
     console.log("🔸 Creating tables...");
-    await client.query(`
+    await query(`
       CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
       CREATE TABLE users (
@@ -315,13 +316,13 @@ async function rebuildDB() {
 async function start() {
   try {
     console.log("🚀 Starting database seeding...");
-    await client.connect();
     await rebuildDB();
   } catch (error) {
     console.error("❌ Error during seed startup:", error);
     throw error;
   } finally {
-    await client.end();
+    // End the pool instead of a single client
+    await pool.end();
     console.log("🔚 Seeding process complete.");
   }
 }

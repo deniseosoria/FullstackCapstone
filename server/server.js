@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const bodyParser = require("body-parser");
-const { client } = require("./db/db.js");
+const { pool } = require("./db/db.js");
 
 // Initialize App
 const app = express();
@@ -72,12 +72,14 @@ app.use((err, req, res, next) => {
 const init = async () => {
   const port = process.env.PORT || 10000;
   try {
-    await client.connect();
+    // Test the pool with a simple query
+    await pool.query('SELECT NOW()');
     app.listen(port, () => {
       console.log(`✅ Server is running on port ${port}`);
     });
   } catch (err) {
-    console.error(" Failed to start server:", err);
+    console.error("Failed to start server:", err);
+    process.exit(1);
   }
 };
 
