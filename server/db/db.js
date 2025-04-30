@@ -1,7 +1,4 @@
-// ==============================
-// IMPORTS & INITIAL SETUP
-// ==============================
-
+require('dotenv').config();
 const pg = require("pg");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
@@ -13,14 +10,12 @@ const SALT_ROUNDS = 10;
 // ==============================
 
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-  // Add some sensible pool configuration
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres', // Use your actual password as fallback
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'evently_db',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // The pool will emit an error on behalf of any idle clients
