@@ -129,6 +129,18 @@ const Events = ({ token }) => {
           <option value="Tech">Tech</option>
           <option value="Food">Food</option>
           <option value="Sports">Sports</option>
+          <option value="Conference">Conference</option>
+          <option value="Festival">Festival</option>
+          <option value="Networking">Networking</option>
+          <option value="Wellness">Wellness</option>
+          <option value="Education">Education</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Business">Business</option>
+          <option value="Fashion">Fashion</option>
+          <option value="Travel">Travel</option>
+          <option value="Charity">Charity</option>
+          <option value="Food & Drink">Food & Drink</option>
+          <option value="Other">Other</option>
         </select>
 
         <select
