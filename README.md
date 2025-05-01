@@ -61,7 +61,7 @@ Delployed url: https://eventbookie.netlify.app
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/your-username/evently.git
+   git clone git@github.com:deniseosoria/FullstackCapstone.git
    cd evently
    ```
 
