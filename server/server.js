@@ -29,7 +29,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://fullstackcapstone-1.onrender.com"
+      "eventbookie.netlify.app"
     ],
     credentials: true,
   })
