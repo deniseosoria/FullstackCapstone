@@ -125,10 +125,6 @@ const Events = ({ token }) => {
         >
           <option value="">All Categories</option>
           <option value="Music">Music</option>
-          <option value="Art">Art</option>
-          <option value="Tech">Tech</option>
-          <option value="Food">Food</option>
-          <option value="Sports">Sports</option>
           <option value="Conference">Conference</option>
           <option value="Festival">Festival</option>
           <option value="Networking">Networking</option>
@@ -140,6 +136,9 @@ const Events = ({ token }) => {
           <option value="Travel">Travel</option>
           <option value="Charity">Charity</option>
           <option value="Food & Drink">Food & Drink</option>
+          <option value="Art">Art</option>
+          <option value="Tech">Tech</option>
+          <option value="Sports">Sports</option>
           <option value="Other">Other</option>
         </select>
 

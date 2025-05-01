@@ -6,7 +6,8 @@
     "seed:dev": "nodemon ./server/db/seed.js",
     "seed": "node ./server/db/seed.js",
     "start": "node ./server/server.js",
-    "start:dev": "nodemon ./server/server.js"
+    "start:dev": "nodemon ./server/server.js",
+    "build:client": "node ./buildClient.js"
   },
   "keywords": [],
   "author": "",
