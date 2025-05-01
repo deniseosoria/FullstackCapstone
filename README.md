@@ -1,5 +1,5 @@
 # Evently
-Delployed url: https://fullstackcapstone-1.onrender.com
+Delployed url: https://eventbookie.netlify.app
 
 # Evently
 

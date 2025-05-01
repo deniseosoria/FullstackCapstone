@@ -43,7 +43,7 @@ async function createTables() {
 
       CREATE TABLE events (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
         event_name VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         event_type VARCHAR(50),
@@ -59,16 +59,16 @@ async function createTables() {
 
       CREATE TABLE bookings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
-        "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        event_id UUID REFERENCES events(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT NOW(),
         CONSTRAINT unique_booking UNIQUE(user_id, event_id)
       );
 
       CREATE TABLE reviews (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
-        "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        event_id UUID REFERENCES events(id) ON DELETE CASCADE,
         rating INT CHECK (rating BETWEEN 1 AND 5),
         text_review TEXT,
         created_at TIMESTAMP DEFAULT NOW(),
@@ -77,8 +77,8 @@ async function createTables() {
 
       CREATE TABLE favorites (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        "user_id" UUID REFERENCES users(id) ON DELETE CASCADE,
-        "event_id" UUID REFERENCES events(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        event_id UUID REFERENCES events(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT NOW(),
         CONSTRAINT unique_favorite UNIQUE(user_id, event_id)
       );
@@ -130,10 +130,6 @@ async function createInitialEvents() {
   try {
     console.log("🔸 Seeding events...");
     const users = await getAllUsers();
-    if (users.length < 3) {
-      throw new Error("Not enough users to create events");
-    }
-
     const [alice, bob, charlie] = users;
 
     const events = [
@@ -148,7 +144,7 @@ async function createInitialEvents() {
         date: "2025-06-15",
         start_time: "09:00",
         end_time: "17:00",
-        picture: "tech_conf.jpg",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116635/evently_uploads/yrnuacq4t4ey5m0aoh2d.jpg",
       },
       {
         user_id: bob.id,
@@ -161,7 +157,7 @@ async function createInitialEvents() {
         date: "2025-07-20",
         start_time: "14:00",
         end_time: "23:00",
-        picture: "music_fest.jpg",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116878/evently_uploads/ajtyzsbvkw3jehxktsvz.jpg",
       },
       {
         user_id: alice.id,
@@ -174,6 +170,7 @@ async function createInitialEvents() {
         date: "2025-04-15",
         start_time: "10:00",
         end_time: "13:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116430/evently_uploads/kmoxadudoryzkwj77fpl.jpg",
       },
       {
         user_id: alice.id,
@@ -186,6 +183,7 @@ async function createInitialEvents() {
         date: "2025-04-20",
         start_time: "07:00",
         end_time: "08:30",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116458/evently_uploads/feffdtko6aeec5zb3pz6.jpg",
       },
       {
         user_id: alice.id,
@@ -198,6 +196,7 @@ async function createInitialEvents() {
         date: "2025-05-10",
         start_time: "09:00",
         end_time: "16:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116612/evently_uploads/obdl3mrhopqhpbhlxcp2.jpg",
       },
       {
         user_id: bob.id,
@@ -210,6 +209,7 @@ async function createInitialEvents() {
         date: "2025-04-25",
         start_time: "18:00",
         end_time: "21:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116766/evently_uploads/q5ivp7bh9oxttcqv0pov.jpg",
       },
       {
         user_id: bob.id,
@@ -222,6 +222,7 @@ async function createInitialEvents() {
         date: "2025-05-01",
         start_time: "20:00",
         end_time: "23:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116788/evently_uploads/tlqrxehwzxihn6koq0jc.jpg",
       },
       {
         user_id: bob.id,
@@ -234,6 +235,7 @@ async function createInitialEvents() {
         date: "2025-05-15",
         start_time: "14:00",
         end_time: "18:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116833/evently_uploads/bqsrbzmkjumibvldq0oi.jpg",
       },
       {
         user_id: bob.id,
@@ -246,6 +248,7 @@ async function createInitialEvents() {
         date: "2025-05-20",
         start_time: "12:00",
         end_time: "20:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116859/evently_uploads/tyirgsisypdccpb79yjl.jpg",
       },
       {
         user_id: charlie.id,
@@ -258,6 +261,7 @@ async function createInitialEvents() {
         date: "2025-06-05",
         start_time: "15:00",
         end_time: "18:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746116313/evently_uploads/f6rk6vdfejgbmhqyqri5.jpg",
       },
       {
         user_id: charlie.id,
@@ -270,6 +274,7 @@ async function createInitialEvents() {
         date: "2025-06-15",
         start_time: "08:00",
         end_time: "17:00",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746068564/evently_uploads/syxbdl3lgf7dg6glwlq7.jpg",
       },
       {
         user_id: charlie.id,
@@ -282,6 +287,7 @@ async function createInitialEvents() {
         date: "2025-06-25",
         start_time: "20:00",
         end_time: "22:30",
+        picture: "https://res.cloudinary.com/dufbdy0z0/image/upload/v1746068667/evently_uploads/h7adm8ogobu1a9xpqph5.jpg",
       },
     ];
 
@@ -297,6 +303,46 @@ async function createInitialEvents() {
   }
 }
 
+// 🔹 Seed Reviews, Favorites, Bookings
+async function createInitialRelations() {
+  try {
+    const { rows: allUsers } = await query(`SELECT id FROM users`);
+    const { rows: allEvents } = await query(`SELECT id FROM events`);
+
+    // Reviews
+    for (let i = 0; i < 10; i++) {
+      const user = allUsers[i % allUsers.length];
+      const event = allEvents[i];
+      await query(
+        `INSERT INTO reviews (user_id, event_id, rating, text_review)
+         VALUES ($1, $2, $3, $4)`,
+        [user.id, event.id, Math.floor(Math.random() * 5) + 1, `Great event #${i + 1}`]
+      );
+    }
+
+    // Favorites (3 per user)
+    for (const user of allUsers) {
+      const events = allEvents.slice(0, 3);
+      for (const event of events) {
+        await query(`INSERT INTO favorites (user_id, event_id) VALUES ($1, $2)`, [user.id, event.id]);
+      }
+    }
+
+    // Bookings (3 per user)
+    for (const user of allUsers) {
+      const events = allEvents.slice(3, 6);
+      for (const event of events) {
+        await query(`INSERT INTO bookings (user_id, event_id) VALUES ($1, $2)`, [user.id, event.id]);
+      }
+    }
+
+    console.log("✅ Reviews, Favorites, and Bookings seeded.");
+  } catch (error) {
+    console.error("❌ Error seeding reviews/bookings/favorites:", error);
+    throw error;
+  }
+}
+
 // 🔹 Rebuild DB
 async function rebuildDB() {
   try {
@@ -305,6 +351,7 @@ async function rebuildDB() {
     await createTables();
     await createInitialUsers();
     await createInitialEvents();
+    await createInitialRelations();
     console.log("✅ Database rebuilt successfully.");
   } catch (error) {
     console.error("❌ Error rebuilding database:", error);
@@ -321,13 +368,9 @@ async function start() {
     console.error("❌ Error during seed startup:", error);
     throw error;
   } finally {
-    // End the pool instead of a single client
     await pool.end();
     console.log("🔚 Seeding process complete.");
   }
 }
 
-// Run script
 start();
-
-  

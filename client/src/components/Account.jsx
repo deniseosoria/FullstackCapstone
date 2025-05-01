@@ -114,7 +114,6 @@ const Account = ({ token }) => {
   async function handleRemoveEvent(eventId) {
     try {
       const deleted = await fetchDeleteEvent(eventId, token);
-      console.log("Response from fetchDeleteEvent:", deleted);
   
       if (deleted?.event || deleted?.success) {
         setUserEvents((prev) => prev.filter((event) => event.id !== eventId));
@@ -156,26 +155,6 @@ const Account = ({ token }) => {
     });
     setBookedEvents(sorted);
   }
-
-  const formatEventDate = (dateString, timeString) => {
-    const eventDate = new Date(dateString);
-    if (isNaN(eventDate)) return "Invalid Date";
-
-    const formattedDate = eventDate.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-
-    const [hours, minutes] = timeString?.split(":")?.map(Number) || [];
-    if (isNaN(hours) || isNaN(minutes)) return formattedDate;
-
-    const hours12 = hours % 12 || 12;
-    const amPm = hours >= 12 ? "PM" : "AM";
-    return `${formattedDate} ${hours12}:${minutes
-      .toString()
-      .padStart(2, "0")} ${amPm}`;
-  };
 
   const filteredBookedEvents = bookedEvents.filter((event) =>
     event.event_name.toLowerCase().includes(searchQuery.toLowerCase())
